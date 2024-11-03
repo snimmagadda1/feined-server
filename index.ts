@@ -167,14 +167,14 @@ const rxServer = await createRxServer({
   database: DB_INSTANCE as unknown as RxDatabase,
   port: 3000,
   adapter: RxServerAdapterExpress,
-  cors: "http://localhost:4200",
+  cors: "*",
 });
 
 // events endpoint
 const endpoint = await rxServer.addRestEndpoint({
   name: "events",
   collection: DB_INSTANCE.events,
-  cors: "http://localhost:4200",
+  cors: "*",
 });
 
 console.log("RxServer: endpoint created ", endpoint.urlPath);
@@ -183,7 +183,7 @@ console.log("RxServer: endpoint created ", endpoint.urlPath);
 const replicationEndpoint = await rxServer.addReplicationEndpoint({
   name: "events-rpl",
   collection: DB_INSTANCE.events,
-  cors: "http://localhost:4200",
+  cors: "*",
 });
 console.log("RxServer: rpl endpoint created ", replicationEndpoint.urlPath);
 
