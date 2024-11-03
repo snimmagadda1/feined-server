@@ -165,7 +165,7 @@ DB_INSTANCE = await _createDb();
 
 const rxServer = await createRxServer({
   database: DB_INSTANCE as unknown as RxDatabase,
-  port: 3000,
+  port: 8080,
   adapter: RxServerAdapterExpress,
   cors: "*",
 });
