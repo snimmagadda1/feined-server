@@ -18,7 +18,7 @@
     "express": "^4.21.1",
     "rxdb": "^15.36.1",
     "rxdb-bun-server": ".",
-    "rxdb-server": "^15.36.0",
+    "rxdb-server": "15.38.0",
     "rxjs": "^7.8.1"
   }
 }
