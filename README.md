@@ -18,3 +18,5 @@ bun run index.ts
 - [bun](https://github.com/oven-sh/bun)
 - [rxdb](https://github.com/pubkey/rxdb)
 - [express](https://github.com/expressjs/express)
+- [caddie](https://github.com/caddyserver/caddy)
+- [docker](https://www.docker.com)
