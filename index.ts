@@ -162,10 +162,14 @@ export async function _createDb(): Promise<RxEventsDatabase> {
 }
 
 DB_INSTANCE = await _createDb();
+const hostname = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
+
+console.log("Starting server with hostname: ", hostname);
 
 const rxServer = await createRxServer({
   database: DB_INSTANCE as unknown as RxDatabase,
   port: 8080,
+  hostname: hostname,
   adapter: RxServerAdapterExpress,
   cors: "*",
 });
