@@ -171,14 +171,14 @@ const rxServer = await createRxServer({
   port: 8080,
   hostname: hostname,
   adapter: RxServerAdapterExpress,
-  cors: "*",
+  cors: "https://todo.s11a.com",
 });
 
 // events endpoint
 const endpoint = await rxServer.addRestEndpoint({
   name: "events",
   collection: DB_INSTANCE.events,
-  cors: "*",
+  cors: "https://todo.s11a.com",
 });
 
 console.log("RxServer: endpoint created ", endpoint.urlPath);
@@ -187,7 +187,7 @@ console.log("RxServer: endpoint created ", endpoint.urlPath);
 const replicationEndpoint = await rxServer.addReplicationEndpoint({
   name: "events-rpl",
   collection: DB_INSTANCE.events,
-  cors: "*",
+  cors: "https://todo.s11a.com",
 });
 console.log("RxServer: rpl endpoint created ", replicationEndpoint.urlPath);
 
