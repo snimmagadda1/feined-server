@@ -5,7 +5,10 @@ import {
 } from ".";
 import {
   fillWithDefaultSettings,
+  getWrittenDocumentsFromBulkWriteResponse,
+  type BulkWriteRow,
   type RxDocumentData,
+  type RxDocumentWriteData,
   type RxJsonSchema,
 } from "rxdb";
 
@@ -32,8 +35,14 @@ function getTestSchema(): RxJsonSchema<RxDocumentData<TestDocType>> {
   });
 }
 
+const testContext = "storage-memory-file-synced.test.ts";
+
 describe("storage-memory-file-synced", () => {
   let storage: RxStorageMemoryFileSynced;
+  const EXAMPLE_REVISION_1 = "1-12080c42d471e3d2625e49dcca3b8e1a";
+  const EXAMPLE_REVISION_2 = "2-22080c42d471e3d2625e49dcca3b8e2b";
+  const EXAMPLE_REVISION_3 = "3-32080c42d471e3d2625e49dcca3b8e3c";
+  const EXAMPLE_REVISION_4 = "4-42080c42d471e3d2625e49dcca3b8e3c";
 
   beforeEach(() => {
     storage = getRxStorageMemoryFileSynced();
@@ -62,7 +71,6 @@ describe("storage-memory-file-synced", () => {
 
     test("open many instances on the same database name", async () => {
       const databaseName = "testDb";
-      // denokv is too slow here and will run in timeouts, so we use a lower amount
       const amount = 20;
       const instances = await Promise.all(
         new Array(amount).fill(0).map(() =>
@@ -144,6 +152,52 @@ describe("storage-memory-file-synced", () => {
         hasThrown = true;
       }
       expect(hasThrown).toBeTruthy();
+    });
+  });
+
+  describe(".bulkWrite()", () => {
+    test.only("should write the document", async () => {
+      const collectionName = crypto.randomUUID();
+      const databaseName = "testDb";
+      const storageInstance = await storage.createStorageInstance<TestDocType>({
+        databaseInstanceToken: crypto.randomUUID(),
+        databaseName,
+        collectionName,
+        schema: getTestSchema(),
+        options: {},
+        multiInstance: false,
+        devMode: true,
+      });
+
+      const docData: RxDocumentWriteData<TestDocType> = {
+        key: "foobar1",
+        value: "barfoo1",
+        _deleted: false,
+        _meta: {
+          lwt: Date.now(),
+        },
+        _rev: EXAMPLE_REVISION_1,
+        _attachments: {},
+      };
+
+      const writeRows: BulkWriteRow<TestDocType>[] = [
+        {
+          document: structuredClone(docData),
+        },
+      ];
+
+      const writeResponse = await storageInstance.bulkWrite(
+        writeRows,
+        testContext // TODO: what does this do?
+      );
+
+      expect(writeResponse.error).toStrictEqual([]);
+      // writeResponse only has errors, so use this helper for output gen
+      const docs = getWrittenDocumentsFromBulkWriteResponse(
+        "id",
+        writeRows,
+        writeResponse
+      );
     });
   });
 });

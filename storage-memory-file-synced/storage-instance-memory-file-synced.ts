@@ -1,8 +1,28 @@
-import type { BulkWriteRow, EventBulk, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageQueryResult } from "rxdb";
-import type { MemoryFileSyncedInternals, RxStorageMemoryFileSynced, RxStorageMemoryFileSyncedInstanceCreationOptions } from ".";
+import {
+  categorizeBulkWriteRows,
+  getPrimaryFieldOfPrimaryKey,
+  requestIdlePromiseNoQueue, // nifty helper for low priority tasks (lazy writes)
+  type BulkWriteRow,
+  type EventBulk,
+  type PreparedQuery,
+  type RxConflictResultionTask,
+  type RxConflictResultionTaskSolution,
+  type RxDocumentData,
+  type RxJsonSchema,
+  type RxStorageBulkWriteResponse,
+  type RxStorageChangeEvent,
+  type RxStorageCountResult,
+  type RxStorageDefaultCheckpoint,
+  type RxStorageInstance,
+  type RxStorageQueryResult,
+} from "rxdb";
+import type {
+  MemoryFileSyncedInternals,
+  RxStorageMemoryFileSynced,
+  RxStorageMemoryFileSyncedInstanceCreationOptions,
+} from ".";
 import type { Observable } from "rxjs";
-import { getMemoryFsCollectionKey } from "./helpers";
-
+import { getMemoryFsCollectionKey, StringKeys } from "./helpers";
 
 // Implementation of custom storage instance
 export class RxStorageMemoryFileSyncedInstance<RxDocType>
@@ -14,9 +34,8 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
       RxStorageDefaultCheckpoint
     >
 {
-  underlyingPersistentStorage?:
-    | RxStorageInstance<RxDocType, any, any, any>
-    | undefined;
+
+  public readonly primaryPath: Extract<keyof RxDocumentData<RxDocType>, string>;
 
   // Implement RxStorageInstance interface
   constructor(
@@ -32,13 +51,46 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
         options
       )}`
     );
+    this.primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   }
 
   bulkWrite(
     documentWrites: BulkWriteRow<RxDocType>[],
     context: string
   ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-    throw new Error("Method not implemented.");
+    const internals = this.internals;
+    const documentsById = this.internals.documents;
+    const primaryPath = this.primaryPath;
+    const categorized = categorizeBulkWriteRows(
+      this,
+      primaryPath as any,
+      documentsById,
+      documentWrites,
+      context
+    )
+
+    console.warn('Bulk write got categorized', categorized);
+    
+    // Fail on first row until implemented
+    return Promise.resolve({
+      error: [
+        {
+          status: 422,
+          /**
+           * set this property to make it easy
+           * to detect if the object is a RxStorageBulkWriteError
+           */
+          isError: true,
+
+          // primary key of the document
+          documentId: "",
+
+          // the original document data that should have been written.
+          writeRow: documentWrites[0],
+          validationErrors: [],
+        },
+      ],
+    });
   }
 
   findDocumentsById(
