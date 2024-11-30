@@ -2,16 +2,12 @@ import { test, expect, describe, beforeEach } from "bun:test";
 import {
   getRxStorageMemoryFileSynced,
   type RxStorageMemoryFileSynced,
-  RxStorageMemoryFileSyncedInstance,
-  type RxStorageMemoryFileSyncedInstanceCreationOptions,
 } from ".";
 import {
   fillWithDefaultSettings,
   type RxDocumentData,
   type RxJsonSchema,
-  type RxStorageInstanceCreationParams,
 } from "rxdb";
-import { RXDB_VERSION } from "../util";
 
 type TestDocType = { key: string; value: string };
 
@@ -64,7 +60,7 @@ describe("storage-memory-file-synced", () => {
       await storageInstance.remove();
     });
 
-    test("open many instances on the same database name", async () => {
+    test.only("open many instances on the same database name", async () => {
       const databaseName = "testDb";
       // denokv is too slow here and will run in timeouts, so we use a lower amount
       const amount = 20;

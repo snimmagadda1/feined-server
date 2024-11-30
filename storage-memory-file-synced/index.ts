@@ -28,6 +28,7 @@ export type MemoryFileSyncedInternals<RxDocType> = {
   useCount: number;
 };
 
+// base storage interface
 export type RxStorageMemoryFileSynced = RxStorage<
   MemoryFileSyncedInternals<any>,
   RxStorageMemoryFileSyncedInstanceCreationOptions
@@ -55,19 +56,20 @@ export function getRxStorageMemoryFileSynced(): RxStorageMemoryFileSynced {
         RxStorageMemoryFileSyncedInstanceCreationOptions
       >
     ): Promise<RxStorageMemoryFileSyncedInstance<RxDocType>> {
+      const store = this;
       const collectionKey = getMemoryFsCollectionKey(
         params.databaseName,
         params.collectionName,
         params.schema.version
       );
       // Check if instance of collection
-      let internals = this.collectionInfo.get(collectionKey);
+      let internals = store.collectionInfo.get(collectionKey);
       if (!internals) {
         internals = {
           documents: new Map(),
           useCount: 1,
         };
-        this.collectionInfo.set(collectionKey, internals);
+        store.collectionInfo.set(collectionKey, internals);
       } else {
         // TODO: maybe deep equal check for same schema
         internals.useCount++;
