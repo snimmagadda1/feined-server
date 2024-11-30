@@ -60,7 +60,7 @@ describe("storage-memory-file-synced", () => {
       await storageInstance.remove();
     });
 
-    test.only("open many instances on the same database name", async () => {
+    test("open many instances on the same database name", async () => {
       const databaseName = "testDb";
       // denokv is too slow here and will run in timeouts, so we use a lower amount
       const amount = 20;
@@ -83,6 +83,67 @@ describe("storage-memory-file-synced", () => {
           return instance.remove();
         })
       );
+    });
+
+    // TODO: understand and implement
+    /**
+     * This test ensures that people do not accidentally set
+     * keyCompression: true in the schema but then forget to use
+     * the key-compression RxStorage wrapper.
+     */
+    test.skip("must throw if keyCompression is set but no key-compression plugin is used", async () => {
+      const schema = getTestSchema();
+      schema.keyCompression = true;
+      let hasThrown = false;
+      try {
+        const collectionName = crypto.randomUUID();
+        const databaseName = "testDb";
+        await storage.createStorageInstance<TestDocType>({
+          databaseInstanceToken: crypto.randomUUID(),
+          databaseName,
+          collectionName,
+          schema: getTestSchema(),
+          options: {},
+          multiInstance: false,
+          devMode: true,
+        });
+      } catch (error: any) {
+        const errorString = error.toString();
+        expect(errorString).toContain("UT5");
+        hasThrown = true;
+      }
+      expect(hasThrown).toBeTruthy();
+    });
+
+    // TODO: understand and implement
+    /**
+     * This test ensures that people do not accidentally set
+     * encrypted stuff in the schema but then forget to use
+     * the encryption RxStorage wrapper.
+     */
+    test.skip("must throw if encryption is defined in schema is set but no encryption plugin is used", async () => {
+      const collectionName = crypto.randomUUID();
+      const databaseName = "testDb";
+
+      const schema = getTestSchema();
+      schema.encrypted = ["value"];
+      let hasThrown = false;
+      try {
+        await storage.createStorageInstance<TestDocType>({
+          databaseInstanceToken: crypto.randomUUID(),
+          databaseName,
+          collectionName,
+          schema: getTestSchema(),
+          options: {},
+          multiInstance: false,
+          devMode: true,
+        });
+      } catch (error: any) {
+        const errorString = error.toString();
+        expect(errorString).toContain("UT6");
+        hasThrown = true;
+      }
+      expect(hasThrown).toBeTruthy();
     });
   });
 });
