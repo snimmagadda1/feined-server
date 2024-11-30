@@ -1,13 +1,17 @@
 import { test, expect, describe, beforeEach } from "bun:test";
 import {
+  getRxStorageMemoryFileSynced,
   type RxStorageMemoryFileSynced,
   RxStorageMemoryFileSyncedInstance,
   type RxStorageMemoryFileSyncedInstanceCreationOptions,
 } from ".";
-import { fillWithDefaultSettings, type RxDocumentData, type RxJsonSchema, type RxStorageInstanceCreationParams } from "rxdb";
-
-// TODO: put this somewhere
-const RXDB_VERSION = "16.0.0-beta.4";
+import {
+  fillWithDefaultSettings,
+  type RxDocumentData,
+  type RxJsonSchema,
+  type RxStorageInstanceCreationParams,
+} from "rxdb";
+import { RXDB_VERSION } from "../util";
 
 type TestDocType = { key: string; value: string };
 
@@ -36,27 +40,7 @@ describe("storage-memory-file-synced", () => {
   let storage: RxStorageMemoryFileSynced;
 
   beforeEach(() => {
-    storage = {
-      name: "memory-file-synced",
-      rxdbVersion: RXDB_VERSION,
-      createStorageInstance<RxDocType>(
-        params: RxStorageInstanceCreationParams<
-          RxDocType,
-          RxStorageMemoryFileSyncedInstanceCreationOptions
-        >
-      ): Promise<RxStorageMemoryFileSyncedInstance<RxDocType>> {
-        const instance = new RxStorageMemoryFileSyncedInstance(
-          params.databaseName,
-          {
-            documents: new Map(),
-          },
-          params.options,
-          params.schema,
-          params.collectionName
-        );
-        return Promise.resolve(instance);
-      },
-    };
+    storage = getRxStorageMemoryFileSynced();
   });
 
   describe("creation", () => {
@@ -76,6 +60,33 @@ describe("storage-memory-file-synced", () => {
       expect(storageInstance).toBeDefined();
       expect(storageInstance.databaseName).toStrictEqual(databaseName);
       expect(storageInstance.collectionName).toStrictEqual(collectionName);
+
+      await storageInstance.remove();
+    });
+
+    test("open many instances on the same database name", async () => {
+      const databaseName = "testDb";
+      // denokv is too slow here and will run in timeouts, so we use a lower amount
+      const amount = 20;
+      const instances = await Promise.all(
+        new Array(amount).fill(0).map(() =>
+          storage.createStorageInstance<TestDocType>({
+            databaseInstanceToken: crypto.randomUUID(),
+            databaseName,
+            collectionName: crypto.randomUUID(),
+            schema: getTestSchema(),
+            options: {},
+            multiInstance: false,
+            devMode: true,
+          })
+        )
+      );
+      await Promise.all(
+        instances.map((instance) => {
+          expect(instance.databaseName).toEqual(databaseName);
+          return instance.remove();
+        })
+      );
     });
   });
 });

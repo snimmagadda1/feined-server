@@ -1,35 +1,94 @@
-import type {
-  BulkWriteRow,
-  EventBulk,
-  PreparedQuery,
-  RxConflictResultionTask,
-  RxConflictResultionTaskSolution,
-  RxDocumentData,
-  RxJsonSchema,
-  RxStorage,
-  RxStorageBulkWriteResponse,
-  RxStorageChangeEvent,
-  RxStorageCountResult,
-  RxStorageDefaultCheckpoint,
-  RxStorageInstance,
-  RxStorageQueryResult,
+import {
+  RXDB_VERSION,
+  type BulkWriteRow,
+  type EventBulk,
+  type PreparedQuery,
+  type RxConflictResultionTask,
+  type RxConflictResultionTaskSolution,
+  type RxDocumentData,
+  type RxJsonSchema,
+  type RxStorage,
+  type RxStorageBulkWriteResponse,
+  type RxStorageChangeEvent,
+  type RxStorageCountResult,
+  type RxStorageDefaultCheckpoint,
+  type RxStorageInstance,
+  type RxStorageInstanceCreationParams,
+  type RxStorageQueryResult,
 } from "rxdb";
 import type { Observable } from "rxjs";
+import { getMemoryFsCollectionKey } from "./helpers";
 
+// init options
 export type RxStorageMemoryFileSyncedInstanceCreationOptions = {};
+
+// implementation specific objects
 export type MemoryFileSyncedInternals<RxDocType> = {
   documents: Map<string, RxDocumentData<RxDocType>>;
+  useCount: number;
 };
+
 export type RxStorageMemoryFileSynced = RxStorage<
   MemoryFileSyncedInternals<any>,
   RxStorageMemoryFileSyncedInstanceCreationOptions
->;
+> & // this object represents the datastore
+{
+  collectionInfo: Map<string, MemoryFileSyncedInternals<any>>;
+};
 
 // export type RxStorageDefaultCheckpoint = {
 //     id: string;
 //     lwt: number;
 // };
 
+const COLLECTION_INFO = new Map();
+
+// Factory method to get a new RxStorage interface
+export function getRxStorageMemoryFileSynced(): RxStorageMemoryFileSynced {
+  const storage: RxStorageMemoryFileSynced = {
+    name: "memory-file-synced",
+    rxdbVersion: RXDB_VERSION,
+    collectionInfo: COLLECTION_INFO,
+    createStorageInstance<RxDocType>(
+      params: RxStorageInstanceCreationParams<
+        RxDocType,
+        RxStorageMemoryFileSyncedInstanceCreationOptions
+      >
+    ): Promise<RxStorageMemoryFileSyncedInstance<RxDocType>> {
+      const collectionKey = getMemoryFsCollectionKey(
+        params.databaseName,
+        params.collectionName,
+        params.schema.version
+      );
+      // Check if instance of collection
+      let internals = this.collectionInfo.get(collectionKey);
+      if (!internals) {
+        internals = {
+          documents: new Map(),
+          useCount: 1,
+        };
+        this.collectionInfo.set(collectionKey, internals);
+      } else {
+        // TODO: maybe deep equal check for same schema
+        internals.useCount++;
+      }
+
+      const instance = new RxStorageMemoryFileSyncedInstance(
+        this,
+        params.databaseName,
+        internals,
+        params.options,
+        params.schema,
+        params.collectionName
+      );
+      return Promise.resolve(instance);
+    },
+  };
+
+  return storage;
+}
+
+// Implementation of custom storage instance
 export class RxStorageMemoryFileSyncedInstance<RxDocType>
   implements
     RxStorageInstance<
@@ -45,6 +104,7 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
 
   // Implement RxStorageInstance interface
   constructor(
+    public readonly store: RxStorageMemoryFileSynced,
     public readonly databaseName: string,
     public readonly internals: MemoryFileSyncedInternals<RxDocType>,
     public readonly options: RxStorageMemoryFileSyncedInstanceCreationOptions,
@@ -52,7 +112,9 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     public readonly collectionName: string
   ) {
     console.log(
-      `**** Created RxStorageMemoryFileSyncedInstance in db ${databaseName} created for collection ${collectionName} | opts: ${JSON.stringify(options)}`
+      `**** Created RxStorageMemoryFileSyncedInstance in db ${databaseName} created for collection ${collectionName} | opts: ${JSON.stringify(
+        options
+      )}`
     );
   }
 
@@ -114,7 +176,15 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
   }
 
   remove(): Promise<void> {
-    throw new Error("Method not implemented.");
+    const collectionKey = getMemoryFsCollectionKey(
+      this.databaseName,
+      this.collectionName,
+      this.schema.version
+    );
+    console.warn(`**** Deleting collection ${collectionKey}`);
+    this.store.collectionInfo.delete(collectionKey);
+    this.internals.useCount--;
+    return Promise.resolve();
   }
 
   conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
