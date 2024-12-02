@@ -20,8 +20,7 @@ export type MemoryFileSyncedInternals<RxDocType> = {
 export type RxStorageMemoryFileSynced = RxStorage<
   MemoryFileSyncedInternals<any>,
   RxStorageMemoryFileSyncedInstanceCreationOptions
-> & // this object represents the datastore
-{
+> & { // this object represents the datastore
   collectionInfo: Map<string, MemoryFileSyncedInternals<any>>;
 };
 
@@ -30,6 +29,7 @@ export type RxStorageMemoryFileSynced = RxStorage<
 //     lwt: number;
 // };
 
+// within JS process, all instances of storage-memory-file-synced interface have same internals map
 const COLLECTION_INFO = new Map();
 
 // Factory method to get a new RxStorage interface
@@ -77,4 +77,3 @@ export function getRxStorageMemoryFileSynced(): RxStorageMemoryFileSynced {
 
   return storage;
 }
-

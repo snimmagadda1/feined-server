@@ -38,9 +38,9 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
 
   // Implement RxStorageInstance interface
   constructor(
-    public readonly store: RxStorageMemoryFileSynced,
+    public readonly store: RxStorageMemoryFileSynced, // parent storage interface
     public readonly databaseName: string,
-    public readonly internals: MemoryFileSyncedInternals<RxDocType>,
+    public readonly internals: MemoryFileSyncedInternals<RxDocType>, // instance data
     public readonly options: RxStorageMemoryFileSyncedInstanceCreationOptions,
     public readonly schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     public readonly collectionName: string
@@ -60,8 +60,8 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     documentWrites: BulkWriteRow<RxDocType>[],
     context: string
   ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-    const internals = this.internals;
-    const documentsById = this.internals.documents;
+    const internals = this.internals
+    const documentsById = internals.documents;
     const primaryPath = this.primaryPath;
     // Use baked-in validtor
     const categorized = categorizeBulkWriteRows(
