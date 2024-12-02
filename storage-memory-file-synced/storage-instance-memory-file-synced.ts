@@ -83,6 +83,8 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
       documentsById.set(update.document[primaryPath] as any, update.document);
     }
 
+    // TODO: rxdb has an attachments concepts, implement writes
+
     return Promise.resolve({ error });
   }
 
