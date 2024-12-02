@@ -23,7 +23,6 @@ import type {
 } from ".";
 import type { Observable } from "rxjs";
 import { getMemoryFsCollectionKey } from "./helpers";
-import { ca } from "date-fns/locale";
 
 // Implementation of custom storage instance
 export class RxStorageMemoryFileSyncedInstance<RxDocType>
@@ -55,6 +54,8 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
   }
 
   // TODO: support indices
+  // TODO: support attachments
+  // TODO: lazy writes/performance optimizations
   bulkWrite(
     documentWrites: BulkWriteRow<RxDocType>[],
     context: string
@@ -82,8 +83,6 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     for (const update of updates) {
       documentsById.set(update.document[primaryPath] as any, update.document);
     }
-
-    // TODO: rxdb has an attachments concepts, implement writes
 
     return Promise.resolve({ error });
   }

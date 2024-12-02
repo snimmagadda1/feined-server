@@ -6,6 +6,7 @@ import {
 import {
   fillWithDefaultSettings,
   getWrittenDocumentsFromBulkWriteResponse,
+  stripMetaDataFromDocument,
   type BulkWriteRow,
   type RxDocumentData,
   type RxDocumentWriteData,
@@ -156,7 +157,7 @@ describe("storage-memory-file-synced", () => {
   });
 
   describe(".bulkWrite()", () => {
-    test.only("should write the document", async () => {
+    test("should write the document", async () => {
       const collectionName = crypto.randomUUID();
       const databaseName = "testDb";
       const storageInstance = await storage.createStorageInstance<TestDocType>({
@@ -192,12 +193,19 @@ describe("storage-memory-file-synced", () => {
       );
 
       expect(writeResponse.error).toStrictEqual([]);
-      // writeResponse only has errors, so use this helper for output gen
-      const docs = getWrittenDocumentsFromBulkWriteResponse(
-        "id",
+
+      // This helper querys internal map in rx-storage-helper.ts to get the result
+      const success = getWrittenDocumentsFromBulkWriteResponse(
+        "key",
         writeRows,
         writeResponse
       );
+      const writtenDoc = stripMetaDataFromDocument(success[0]);
+      const requestDoc = stripMetaDataFromDocument(docData);
+
+      expect(writtenDoc).toStrictEqual(requestDoc);
+
+      storageInstance.remove();
     });
   });
 });
