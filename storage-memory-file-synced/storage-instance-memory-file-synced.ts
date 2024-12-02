@@ -22,7 +22,8 @@ import type {
   RxStorageMemoryFileSyncedInstanceCreationOptions,
 } from ".";
 import type { Observable } from "rxjs";
-import { getMemoryFsCollectionKey, StringKeys } from "./helpers";
+import { getMemoryFsCollectionKey } from "./helpers";
+import { ca } from "date-fns/locale";
 
 // Implementation of custom storage instance
 export class RxStorageMemoryFileSyncedInstance<RxDocType>
@@ -34,7 +35,6 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
       RxStorageDefaultCheckpoint
     >
 {
-
   public readonly primaryPath: Extract<keyof RxDocumentData<RxDocType>, string>;
 
   // Implement RxStorageInstance interface
@@ -54,6 +54,7 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     this.primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   }
 
+  // TODO: support indices
   bulkWrite(
     documentWrites: BulkWriteRow<RxDocType>[],
     context: string
@@ -61,36 +62,28 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     const internals = this.internals;
     const documentsById = this.internals.documents;
     const primaryPath = this.primaryPath;
+    // Use baked-in validtor
     const categorized = categorizeBulkWriteRows(
       this,
       primaryPath as any,
       documentsById,
       documentWrites,
       context
-    )
+    );
 
-    console.warn('Bulk write got categorized', categorized);
-    
-    // Fail on first row until implemented
-    return Promise.resolve({
-      error: [
-        {
-          status: 422,
-          /**
-           * set this property to make it easy
-           * to detect if the object is a RxStorageBulkWriteError
-           */
-          isError: true,
+    const error = categorized.errors;
+    const inserts = categorized.bulkInsertDocs;
+    const updates = categorized.bulkUpdateDocs;
 
-          // primary key of the document
-          documentId: "",
+    for (const insert of inserts) {
+      documentsById.set(insert.document[primaryPath] as any, insert.document);
+    }
 
-          // the original document data that should have been written.
-          writeRow: documentWrites[0],
-          validationErrors: [],
-        },
-      ],
-    });
+    for (const update of updates) {
+      documentsById.set(update.document[primaryPath] as any, update.document);
+    }
+
+    return Promise.resolve({ error });
   }
 
   findDocumentsById(
