@@ -60,7 +60,7 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     documentWrites: BulkWriteRow<RxDocType>[],
     context: string
   ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-    const internals = this.internals
+    const internals = this.internals;
     const documentsById = internals.documents;
     const primaryPath = this.primaryPath;
     // Use baked-in validtor
@@ -91,7 +91,17 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     ids: string[],
     withDeleted: boolean
   ): Promise<RxDocumentData<RxDocType>[]> {
-    throw new Error("Method not implemented.");
+    const internals = this.internals;
+    const documentsById = internals.documents;
+    const toReturn = [];
+    for(const id of ids) {
+      const found = documentsById.get(id);
+      if (found && (!found?._deleted || withDeleted)) {
+        toReturn.push(found);
+      }
+    }
+
+    return Promise.resolve(toReturn);
   }
 
   query(
