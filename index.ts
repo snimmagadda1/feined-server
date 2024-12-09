@@ -42,6 +42,9 @@ const EVENT_SCHEMA_LITERAL = {
     timestamp: {
       type: "number",
     },
+    index: {
+      type: "number",
+    },
     _deleted: {
       type: "boolean",
     },
@@ -151,6 +154,7 @@ export async function _createDb(): Promise<RxEventsDatabase> {
           date: formatISO(startOfDay(week[idx].date), {
             representation: "complete",
           }),
+          index: 0,
           completed: false,
           notes: "",
           timestamp: new Date().getTime(),
