@@ -65,13 +65,57 @@ export type RxEventsCollection = RxCollection<
   unknown
 >;
 
-export type RxEventsCollections = {
-  events: RxEventsCollection;
-};
-
 export type RxEventsDatabase = RxDatabase<
   RxEventsCollections,
   any,
   any,
   unknown
 >;
+
+// User schema
+export const USER_SCHEMA_LITERAL = {
+  version: 0,
+  primaryKey: "id",
+  type: "object",
+  properties: {
+    id: {
+      type: "string",
+      maxLength: 100,
+    },
+    email: {
+      type: "string",
+      maxLength: 255,
+    },
+    name: {
+      type: "string",
+    },
+    facebookId: {
+      type: "string",
+      maxLength: 300, // total guess
+    },
+    _deleted: {
+      type: "boolean",
+    },
+  },
+  required: ["id", "email", "facebookId"],
+  indexes: ["email", "facebookId"],
+} as const;
+
+// Add type definitions
+export type RxUserDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<
+  typeof USER_SCHEMA_LITERAL
+>;
+
+export type RxUsersCollection = RxCollection<
+  RxUserDocumentType,
+  {},
+  {},
+  {},
+  unknown
+>;
+
+// Update database collections type
+export type RxEventsCollections = {
+  events: RxEventsCollection;
+  users: RxUsersCollection;
+};

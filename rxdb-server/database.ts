@@ -10,11 +10,16 @@ import {
   EVENTS_SCHEMA,
   type RxEventsDatabase,
   type RxEventDocumentType,
+  USER_SCHEMA_LITERAL,
+  type RxUserDocumentType,
 } from "./schema";
 
 const collectionSettings = {
   ["events"]: {
     schema: EVENTS_SCHEMA,
+  } as RxCollectionCreator<any>,
+  ["users"]: {
+    schema: USER_SCHEMA_LITERAL,
   } as RxCollectionCreator<any>,
 };
 
@@ -82,6 +87,17 @@ export async function createDb(): Promise<RxEventsDatabase> {
         } as RxEventDocumentType)
     )
   );
-  console.log("DatabaseService: bulk insert");
+  console.log("DatabaseService: bulk insert events");
+
+  const testUser = {
+    id: "test-user",
+    email: "test@test.com",
+    name: "Test User",
+    facebookId: "test-facebook-id",
+  } as RxUserDocumentType;
+
+  await db.users.bulkInsert([testUser]);
+  console.log("DatabaseService: bulk insert users");
+
   return db;
 }
