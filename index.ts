@@ -3,6 +3,7 @@ import { authConfig, setupAuth } from "./auth/auth";
 import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
 import passport from "passport";
+import cors from "cors"; // Add this import
 
 const db = await createDb();
 const rxServer = await setupServer(db);
@@ -10,11 +11,15 @@ const rxServer = await setupServer(db);
 // Access the underlying Express app
 const app = rxServer.serverApp as Express;
 
-// app.get("/hello", (req, res) => {
-//   res.json({ message: "Hello World!" });
-// });
-
-// app.use("/user", userRoutes);
+// Add CORS configuration
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:4200", // Allow your frontend origin
+    credentials: true, // Required for cookies, authorization headers with HTTPS
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(session(authConfig.session));
 // Initialize Passport and restore authentication state from session

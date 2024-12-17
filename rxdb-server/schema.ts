@@ -98,7 +98,7 @@ export const USER_SCHEMA_LITERAL = {
     },
   },
   required: ["id", "email", "githubId"],
-  indexes: ["email", "githubId"],
+  indexes: ["githubId"],
 } as const;
 
 // Add type definitions
