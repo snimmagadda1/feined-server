@@ -93,7 +93,7 @@ export async function createDb(): Promise<RxEventsDatabase> {
     id: "test-user",
     email: "test@test.com",
     name: "Test User",
-    facebookId: "test-facebook-id",
+    githubId: "test-githubId-id",
   } as RxUserDocumentType;
 
   await db.users.bulkInsert([testUser]);

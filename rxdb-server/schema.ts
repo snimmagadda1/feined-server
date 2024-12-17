@@ -89,7 +89,7 @@ export const USER_SCHEMA_LITERAL = {
     name: {
       type: "string",
     },
-    facebookId: {
+    githubId: {
       type: "string",
       maxLength: 300, // total guess
     },
@@ -97,8 +97,8 @@ export const USER_SCHEMA_LITERAL = {
       type: "boolean",
     },
   },
-  required: ["id", "email", "facebookId"],
-  indexes: ["email", "facebookId"],
+  required: ["id", "email", "githubId"],
+  indexes: ["email", "githubId"],
 } as const;
 
 // Add type definitions
