@@ -115,6 +115,17 @@ export function setupAuth(db: RxEventsDatabase) {
     }
   );
 
+  router.get("/check", (req, res) => {
+    console.log("Checking authentication status...", JSON.stringify(req.user));
+    if (req.isAuthenticated()) {
+      console.log("User is authenticated");
+      res.json({ authenticated: true });
+    } else {
+      console.log("User is not authenticated");
+      res.json({ authenticated: false });
+    }
+  });
+
   router.post("/logout", (req, res) => {
     req.logout(() => {
       res.redirect(

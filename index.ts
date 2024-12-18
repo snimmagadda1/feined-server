@@ -24,7 +24,7 @@ app.use(
 app.use(session(authConfig.session));
 // Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
-
+app.use(passport.session());
 // auth handler routes
 app.use("/auth", setupAuth(db));
 
