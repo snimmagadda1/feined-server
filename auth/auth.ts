@@ -1,11 +1,10 @@
 import { Router } from "express";
-import type { RxEventsDatabase, RxUserDocumentType } from "../rxdb-server";
+import type { RxEventsDatabase } from "../rxdb-server";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { type Profile as GitHubProfile } from "passport-github2";
 import { type VerifyCallback } from "passport-oauth2";
 import passport from "passport";
 import { nanoid } from "nanoid";
-import { generateToken } from "./jwt";
 
 export const authConfig = {
   github: {
@@ -20,7 +19,9 @@ export const authConfig = {
     resave: false,
     saveUninitialized: false,
     cookie: {
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   },
 };
@@ -29,7 +30,6 @@ export function setupAuth(db: RxEventsDatabase) {
   const router = Router();
 
   // Passport session setup.
-  // TODO: understand this
   passport.serializeUser((user: any, done) => {
     done(null, user.id);
   });
@@ -48,7 +48,6 @@ export function setupAuth(db: RxEventsDatabase) {
     }
   });
 
-  // TODO: understand return types of this
   passport.use(
     new GitHubStrategy(
       authConfig.github,
@@ -110,19 +109,27 @@ export function setupAuth(db: RxEventsDatabase) {
     }),
     (req, res) => {
       console.log("Authenticating .. req.user", req.user);
-      const token = generateToken(req.user as RxUserDocumentType);
-      res.cookie("jwt", token, { httpOnly: true });
       res.redirect(
         `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home"
       );
     }
   );
 
-  // router.get("/logout", (req, res) => {
-  //   req.logout(() => {
-  //     res.redirect("/"); // TODO: logout page of client
-  //   });
-  // });
+  router.post("/logout", (req, res) => {
+    req.logout(() => {
+      res.redirect(
+        `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home"
+      );
+    });
+  });
 
   return router;
+}
+
+// simple middleware to ensure user is authenticated
+export function ensureAuthenticated(req: any, res: any, next: any) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/auth/github"); // TODO: login page of client
 }
