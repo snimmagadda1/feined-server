@@ -21,6 +21,8 @@ const collectionSettings = {
   } as RxCollectionCreator<any>,
 };
 
+export let DB: RxEventsDatabase | null = null;
+
 export async function createDb(): Promise<RxEventsDatabase> {
   // TODO: check dev mode
   if (process.env.NODE_ENV !== "production") {
@@ -37,7 +39,7 @@ export async function createDb(): Promise<RxEventsDatabase> {
     name: "feineddb",
     storage: storage,
   });
-
+  DB = db;
   console.log("DatabaseService: created database");
 
   await db.addCollections(collectionSettings);

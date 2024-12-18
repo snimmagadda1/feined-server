@@ -22,17 +22,17 @@ export async function setupServer(db: RxEventsDatabase) {
     hostname: hostname,
     adapter: RxServerAdapterExpress,
     cors: Bun.env.CORS,
-    authHandler: ((
-      headers: IncomingHttpHeaders
-    ): RxServerAuthData<GithubAuthData> => {
-      console.warn("Auth handler called", headers);
-      return {
-        data: {
-          githubId: headers["x-github-id"] as string,
-        },
-        validUntil: Date.now() + 1000 * 60 * 60 * 24, // 1 day // TODO:align with session
-      };
-    }) satisfies RxServerAuthHandler<GithubAuthData>,
+    // authHandler: ((
+    //   headers: IncomingHttpHeaders
+    // ): RxServerAuthData<GithubAuthData> => {
+    //   console.warn("Auth handler called", headers);
+    //   return {
+    //     data: {
+    //       githubId: headers["x-github-id"] as string,
+    //     },
+    //     validUntil: Date.now() + 1000 * 60 * 60 * 24, // 1 day // TODO:align with session
+    //   };
+    // }) satisfies RxServerAuthHandler<GithubAuthData>,
   });
 
   // events endpoint

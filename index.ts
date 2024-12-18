@@ -1,5 +1,6 @@
 import session from "express-session";
 import { authConfig, ensureAuthenticated, setupAuth } from "./auth/auth";
+import userRoutes from "./routes/user";
 import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
 import passport from "passport";
@@ -49,8 +50,6 @@ passport.deserializeUser(async (id: string, done) => {
 app.use("/auth", setupAuth(db));
 
 // Protected route example
-app.get("/dashboard", ensureAuthenticated, (req, res) => {
-  res.json({ user: req.user });
-});
+app.use("/user", userRoutes);
 
 await rxServer.start();

@@ -119,7 +119,10 @@ export function setupAuth(db: RxEventsDatabase) {
     console.log("Checking authentication status...", JSON.stringify(req.user));
     if (req.isAuthenticated()) {
       console.log("User is authenticated");
-      res.json({ authenticated: true });
+      res.json({
+        authenticated: true,
+        user: { ...req.user, email: undefined },
+      });
     } else {
       console.log("User is not authenticated");
       res.json({ authenticated: false });
@@ -137,7 +140,15 @@ export function setupAuth(db: RxEventsDatabase) {
   return router;
 }
 
-// simple middleware to ensure user is authenticated
+// Add to all routes -> throws 401 if req.isAuthenticated() is false
+export function isAuth(req: any, res: any, next: any) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  return next();
+}
+
+// Add to client routes -> simple middleware to ensure user is authenticated
 export function ensureAuthenticated(req: any, res: any, next: any) {
   if (req.isAuthenticated()) {
     return next();
