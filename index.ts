@@ -25,6 +25,26 @@ app.use(session(authConfig.session));
 // Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Passport session setup.
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+
+// Deserialize user from the session
+passport.deserializeUser(async (id: string, done) => {
+  try {
+    const user = await db.users
+      .findOne({
+        selector: { id },
+      })
+      .exec();
+    done(null, user?.toJSON());
+  } catch (error) {
+    done(error);
+  }
+});
+
 // auth handler routes
 app.use("/auth", setupAuth(db));
 

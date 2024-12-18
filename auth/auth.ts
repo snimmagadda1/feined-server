@@ -115,7 +115,7 @@ export function setupAuth(db: RxEventsDatabase) {
     }
   );
 
-  router.get("/check", (req, res) => {
+  router.get("/isLoggedIn", (req, res) => {
     console.log("Checking authentication status...", JSON.stringify(req.user));
     if (req.isAuthenticated()) {
       console.log("User is authenticated");
