@@ -7,7 +7,10 @@
     "build": "bun build index.ts --target bun --compile --outfile app"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/express-session": "^1.18.1",
+    "@types/passport": "^1.0.17",
+    "@types/passport-github2": "^1.2.9"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -16,6 +19,10 @@
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "nanoid": "^5.0.9",
+    "passport": "^0.7.0",
+    "passport-github2": "^0.1.12",
     "rxdb": "^15.36.1",
     "rxdb-bun-server": ".",
     "rxdb-server": "15.38.0",
