@@ -37,6 +37,9 @@ COPY --from=prerelease /usr/src/app/rxdb-server/*.ts ./rxdb-server/
 COPY --from=prerelease /usr/src/app/storage-memory-file-synced/*.ts ./storage-memory-file-synced/
 COPY --from=prerelease /usr/src/app/package.json ./
 
+# env
+COPY --from=prerelease /usr/src/app/.env ./.env
+
 # run the app
 ENV NODE_ENV=production
 USER bun
