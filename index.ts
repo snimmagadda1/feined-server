@@ -18,33 +18,41 @@ app.use(
     origin: process.env.FRONTEND_URL || "http://localhost:4200", // Allow your frontend origin
     credentials: true, // Required for cookies, authorization headers with HTTPS
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 
 app.use(session(authConfig.session));
 // Initialize Passport and restore authentication state from session
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Passport session setup.
 passport.serializeUser((user: any, done) => {
+  console.log("Serializing user:", user);
   done(null, user.id);
 });
 
-// Deserialize user from the session
 passport.deserializeUser(async (id: string, done) => {
   try {
+    console.log("Deserializing user id:", id);
     const user = await db.users
       .findOne({
         selector: { id },
       })
       .exec();
-    done(null, user?.toJSON());
+
+    if (!user) {
+      console.log("User not found during deserialization");
+      return done(null, null);
+    }
+
+    console.log("Deserialized user:", user.toJSON());
+    done(null, user.toJSON());
   } catch (error) {
+    console.error("Error during deserialization:", error);
     done(error);
   }
 });
+app.use(passport.initialize());
+app.use(passport.session());
 
 // auth handler routes
 app.use("/auth", setupAuth(db));

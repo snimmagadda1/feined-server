@@ -20,6 +20,9 @@ export const authConfig = {
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
+      sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+        | "none"
+        | "lax",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
@@ -28,25 +31,6 @@ export const authConfig = {
 
 export function setupAuth(db: RxEventsDatabase) {
   const router = Router();
-
-  // Passport session setup.
-  passport.serializeUser((user: any, done) => {
-    done(null, user.id);
-  });
-
-  // Deserialize user from the session
-  passport.deserializeUser(async (id: string, done) => {
-    try {
-      const user = await db.users
-        .findOne({
-          selector: { id },
-        })
-        .exec();
-      done(null, user?.toJSON());
-    } catch (error) {
-      done(error);
-    }
-  });
 
   passport.use(
     new GitHubStrategy(
@@ -116,7 +100,9 @@ export function setupAuth(db: RxEventsDatabase) {
   );
 
   router.get("/isLoggedIn", (req, res) => {
-    console.log("Checking authentication status...", JSON.stringify(req.user));
+    console.log("Checking authentication status...");
+    console.log("sessionID", req.sessionID);
+    console.log("USER", req.user);
     if (req.isAuthenticated()) {
       console.log("User is authenticated");
       res.json({
@@ -129,11 +115,33 @@ export function setupAuth(db: RxEventsDatabase) {
     }
   });
 
-  router.post("/logout", (req, res) => {
-    req.logout(() => {
-      res.redirect(
-        `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home"
-      );
+  router.post("/logout", (req, res, next) => {
+    // First clear the login session
+    console.log("Checking authentication status...");
+    console.log("sessionID", req.sessionID);
+    console.log("USER", req.user);
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return next(err);
+      }
+
+      // Then destroy the session to prevent auto-regeneration
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destruction error:", err);
+          return next(err);
+        }
+
+        res.clearCookie("connect.sid", {
+          path: "/",
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        });
+
+        res.status(200).json({ success: true });
+      });
     });
   });
 
