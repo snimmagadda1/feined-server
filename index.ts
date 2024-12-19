@@ -1,198 +1,63 @@
-import {
-  type RxDatabase,
-  type RxCollection,
-  type RxJsonSchema,
-  toTypedRxJsonSchema,
-  type ExtractDocumentTypeFromTypedRxJsonSchema,
-  type RxCollectionCreator,
-  addRxPlugin,
-  createRxDatabase,
-  removeRxDatabase,
-} from "rxdb";
-import { getRxStorageMemory } from "rxdb/plugins/storage-memory";
-import { formatISO, isToday, startOfDay } from "date-fns";
-import { createRxServer } from "rxdb-server/plugins/server";
+import session from "express-session";
+import { authConfig, ensureAuthenticated, setupAuth } from "./auth/auth";
+import userRoutes from "./routes/user";
+import { createDb, setupServer } from "./rxdb-server";
+import type { Express } from "express";
+import passport from "passport";
+import cors from "cors"; // Add this import
 
-const EVENT_SCHEMA_LITERAL = {
-  version: 0,
-  primaryKey: "id",
-  type: "object",
-  properties: {
-    id: {
-      type: "string",
-      maxLength: 100,
-    },
-    title: {
-      type: "string",
-    },
-    date: {
-      type: "string",
-      format: "date-time",
-      maxLength: 30,
-    },
-    completed: {
-      type: "boolean",
-    },
-    notes: {
-      type: "string",
-    },
-    color: {
-      type: "string",
-    },
-    timestamp: {
-      type: "number",
-    },
-    index: {
-      type: "number",
-    },
-    _deleted: {
-      type: "boolean",
-    },
-  },
-  required: ["id", "title", "date"],
-  indexes: ["date"],
-} as const;
+const db = await createDb();
+const rxServer = await setupServer(db);
 
-const schemaTyped = toTypedRxJsonSchema(EVENT_SCHEMA_LITERAL);
+// Access the underlying Express app
+const app = rxServer.serverApp as Express;
 
-export type RxEventDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<
-  typeof schemaTyped
->;
+// Add CORS configuration
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:4200", // Allow your frontend origin
+    credentials: true, // Required for cookies, authorization headers with HTTPS
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"],
+  })
+);
 
-export const EVENTS_SCHEMA: RxJsonSchema<RxEventDocumentType> =
-  EVENT_SCHEMA_LITERAL;
+app.use(session(authConfig.session));
+// Initialize Passport and restore authentication state from session
+passport.serializeUser((user: any, done) => {
+  console.log("Serializing user:", user);
+  done(null, user.id);
+});
 
-const collectionSettings = {
-  ["events"]: {
-    schema: EVENTS_SCHEMA,
-  } as RxCollectionCreator<any>,
-};
+passport.deserializeUser(async (id: string, done) => {
+  try {
+    console.log("Deserializing user id:", id);
+    const user = await db.users
+      .findOne({
+        selector: { id },
+      })
+      .exec();
 
-let DB_INSTANCE: RxEventsDatabase;
+    if (!user) {
+      console.log("User not found during deserialization");
+      return done(null, null);
+    }
 
-type RxEventMethods = {};
-
-export type RxEventsCollection = RxCollection<
-  RxEventDocumentType,
-  RxEventMethods,
-  {},
-  {},
-  unknown
->;
-
-export type RxEventsCollections = {
-  events: RxEventsCollection;
-};
-
-export type RxEventsDatabase = RxDatabase<
-  RxEventsCollections,
-  any,
-  any,
-  unknown
->;
-
-const initWeek = () => {
-  const currentDate = new Date();
-  const currentDayOfWeek = currentDate.getDay(); // 0 (Sunday) to 6 (Saturday)
-  const startOfWeek = new Date(currentDate);
-  startOfWeek.setDate(currentDate.getDate() - currentDayOfWeek); // Set to Sunday
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to Saturday
-
-  const week = [];
-
-  for (let i = 0; i < 7; i++) {
-    const dayDate = new Date(startOfWeek);
-    dayDate.setDate(startOfWeek.getDate() + i);
-    week.push({
-      date: startOfDay(dayDate),
-      isCurrent: isToday(dayDate),
-    });
+    console.log("Deserialized user:", user.toJSON());
+    done(null, user.toJSON());
+  } catch (error) {
+    console.error("Error during deserialization:", error);
+    done(error);
   }
-
-  return week;
-};
-
-import { type Server } from "bun";
-import { RxServerAdapterExpress } from "rxdb-server/plugins/adapter-express";
-
-export const HTTP_SERVER_BY_BUN = new WeakMap<Server, Server>();
-
-export async function _createDb(): Promise<RxEventsDatabase> {
-  // TODO: check dev mode
-  await import("rxdb/plugins/dev-mode").then((module) =>
-    addRxPlugin(module.RxDBDevModePlugin)
-  );
-
-  // Data will only exist as long as server does :P
-  const storage = getRxStorageMemory();
-
-  await removeRxDatabase("feineddb", storage);
-
-  const db = await createRxDatabase<RxEventsCollections>({
-    name: "feineddb",
-    storage: storage,
-  });
-
-  console.log("DatabaseService: created database");
-
-  await db.addCollections(collectionSettings);
-
-  console.log("DatabaseService: create collections");
-
-  const week = initWeek();
-  await db.events.bulkInsert(
-    [
-      "A demo event",
-      "Hover me to mark as complete",
-      "This one has a color",
-    ].map(
-      (title, idx) =>
-        ({
-          id: "event-" + idx,
-          title,
-          date: formatISO(startOfDay(week[idx].date), {
-            representation: "complete",
-          }),
-          index: 0,
-          completed: false,
-          notes: "",
-          timestamp: new Date().getTime(),
-        } as RxEventDocumentType)
-    )
-  );
-  console.log("DatabaseService: bulk insert");
-  return db;
-}
-
-DB_INSTANCE = await _createDb();
-const hostname = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
-
-console.log("Starting server with hostname: ", hostname);
-
-const rxServer = await createRxServer({
-  database: DB_INSTANCE as unknown as RxDatabase,
-  port: 8080,
-  hostname: hostname,
-  adapter: RxServerAdapterExpress,
-  cors: "https://todo.s11a.com",
 });
+app.use(passport.initialize());
+app.use(passport.session());
 
-// events endpoint
-const endpoint = await rxServer.addRestEndpoint({
-  name: "events",
-  collection: DB_INSTANCE.events,
-  cors: "https://todo.s11a.com",
-});
+// auth handler routes
+app.use("/auth", setupAuth(db));
 
-console.log("RxServer: endpoint created ", endpoint.urlPath);
-
-// replication endpoint
-const replicationEndpoint = await rxServer.addReplicationEndpoint({
-  name: "events-rpl",
-  collection: DB_INSTANCE.events,
-  cors: "https://todo.s11a.com",
-});
-console.log("RxServer: rpl endpoint created ", replicationEndpoint.urlPath);
+// Protected route example
+// app.use("/user", userRoutes);
 
 await rxServer.start();
