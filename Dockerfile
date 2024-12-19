@@ -28,13 +28,14 @@ RUN bun run build
 
 # copy production dependencies and source code into final image
 FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/index.ts .
-COPY --from=prerelease /usr/src/app/package.json .
-COPY --from=prerelease /usr/src/app/auth ./auth
-COPY --from=prerelease /usr/src/app/routes ./routes
-COPY --from=prerelease /usr/src/app/rxdb-server ./rxdb-server
-COPY --from=prerelease /usr/src/app/storage-memory-file-synced ./storage-memory-file-synced
+COPY --from=install /temp/prod/node_modules ./node_modules
+
+COPY --from=prerelease /usr/src/app/*.ts ./
+COPY --from=prerelease /usr/src/app/auth/*.ts ./auth/
+COPY --from=prerelease /usr/src/app/routes/*.ts ./routes/
+COPY --from=prerelease /usr/src/app/rxdb-server/*.ts ./rxdb-server/
+COPY --from=prerelease /usr/src/app/storage-memory-file-synced/*.ts ./storage-memory-file-synced/
+COPY --from=prerelease /usr/src/app/package.json ./
 
 # run the app
 ENV NODE_ENV=production
