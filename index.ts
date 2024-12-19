@@ -58,6 +58,6 @@ app.use(passport.session());
 app.use("/auth", setupAuth(db));
 
 // Protected route example
-app.use("/user", userRoutes);
+// app.use("/user", userRoutes);
 
 await rxServer.start();
