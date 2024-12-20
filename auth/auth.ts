@@ -20,7 +20,7 @@ export const authConfig = {
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+      sameSite: (process.env.NODE_ENV === "production" ? "strict" : "lax") as
         | "none"
         | "lax",
       httpOnly: true,
