@@ -5,12 +5,15 @@ import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
 import passport from "passport";
 import cors from "cors"; // Add this import
+import { requestLogger } from "./middleware/logger";
 
 const db = await createDb();
 const rxServer = await setupServer(db);
 
 // Access the underlying Express app
 const app = rxServer.serverApp as Express;
+// Add logger middleware
+app.use(requestLogger);
 
 // Add CORS configuration
 app.use(
@@ -26,13 +29,13 @@ app.use(
 app.use(session(authConfig.session));
 // Initialize Passport and restore authentication state from session
 passport.serializeUser((user: any, done) => {
-  console.log("Serializing user:", user);
+  // console.log("Serializing user:", user);
   done(null, user.id);
 });
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    console.log("Deserializing user id:", id);
+    // console.log("Deserializing user id:", id);
     const user = await db.users
       .findOne({
         selector: { id },
@@ -40,11 +43,11 @@ passport.deserializeUser(async (id: string, done) => {
       .exec();
 
     if (!user) {
-      console.log("User not found during deserialization");
+      // console.log("User not found during deserialization");
       return done(null, null);
     }
 
-    console.log("Deserialized user:", user.toJSON());
+    // console.log("Deserialized user:", user.toJSON());
     done(null, user.toJSON());
   } catch (error) {
     console.error("Error during deserialization:", error);

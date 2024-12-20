@@ -36,7 +36,7 @@ COPY --from=prerelease /usr/src/app/routes/*.ts ./routes/
 COPY --from=prerelease /usr/src/app/rxdb-server/*.ts ./rxdb-server/
 COPY --from=prerelease /usr/src/app/storage-memory-file-synced/*.ts ./storage-memory-file-synced/
 COPY --from=prerelease /usr/src/app/package.json ./
-
+COPY --from=prerelease /usr/src/app/middleware/*.ts ./middleware/
 
 # run the app
 ENV NODE_ENV=production
