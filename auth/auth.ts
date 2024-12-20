@@ -93,6 +93,10 @@ export function setupAuth(db: RxEventsDatabase) {
     }),
     (req, res) => {
       console.log("Authenticating .. req.user", req.user);
+      console.log("Authentication successful");
+      console.log("Session ID:", req.sessionID);
+      console.log("Session:", req.session);
+      console.log("Response Headers:", res.getHeaders());
       res.redirect(
         `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home"
       );

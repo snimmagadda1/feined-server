@@ -5,7 +5,7 @@ import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
 import passport from "passport";
 import cors from "cors"; // Add this import
-import { requestLogger } from "./middleware/logger";
+import { headerLogger, requestLogger } from "./middleware/logger";
 
 const db = await createDb();
 const rxServer = await setupServer(db);
@@ -14,6 +14,7 @@ const rxServer = await setupServer(db);
 const app = rxServer.serverApp as Express;
 // Add logger middleware
 app.use(requestLogger);
+app.use(headerLogger);
 
 // Add CORS configuration
 app.use(

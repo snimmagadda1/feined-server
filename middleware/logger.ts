@@ -52,3 +52,16 @@ const format = [
 ].join(" ");
 
 export const requestLogger = morgan(format);
+
+export const headerLogger = (req: any, res: any, next: any) => {
+  const originalEnd = res.end;
+
+  res.end = function (...args: any[]) {
+    console.log("\n=== Response Headers ===");
+    console.log(res.getHeaders());
+    console.log("=====================\n");
+    originalEnd.apply(res, args);
+  };
+
+  next();
+};
