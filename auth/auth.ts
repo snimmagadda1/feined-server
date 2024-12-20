@@ -21,7 +21,7 @@ export const authConfig = {
     cookie: {
       secure: process.env.NODE_ENV === "production",
       sameSite: (process.env.NODE_ENV === "production" ? "strict" : "lax") as
-        | "none"
+        | "strict"
         | "lax",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
