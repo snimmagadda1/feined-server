@@ -14,5 +14,8 @@ feined-server.s11a.com {
     header_up X-Forwarded-For {remote}
     header_up X-Forwarded-Proto {scheme}
     header_down Strict-Transport-Security max-age=31536000;
+    header_down Access-Control-Allow-Credentials true
+    header_down Access-Control-Allow-Origin https://todo.s11a.com
+    header_down Access-Control-Expose-Headers Set-Cookie
    }
 }
