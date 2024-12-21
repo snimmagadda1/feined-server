@@ -8,6 +8,17 @@ morgan.token("user-id", (req: Request) =>
   req.user ? (req.user as any).id : "-"
 );
 
+// Add headers token
+morgan.token("headers", (req: Request, res: Response) => {
+  const headers = res.getHeaders();
+  return (
+    "\n" +
+    Object.entries(headers)
+      .map(([key, value]) => `${colors.gray(key)}: ${value}`)
+      .join("\n")
+  );
+});
+
 // Color status based on response code
 morgan.token("colored-status", (req: Request, res: Response) => {
   const status = res.statusCode;
@@ -49,6 +60,7 @@ const format = [
   "user::user-id",
   colors.gray("|"),
   ":user-agent",
+  ":headers", // Add headers to the log format
 ].join(" ");
 
 export const requestLogger = morgan(format);
