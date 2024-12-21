@@ -19,6 +19,7 @@ export const authConfig = {
     resave: false,
     saveUninitialized: false,
     cookie: {
+      domain: ".s11a.com",
       secure: process.env.NODE_ENV === "production",
       sameSite: false,
       httpOnly: true,
