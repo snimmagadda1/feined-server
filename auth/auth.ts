@@ -83,7 +83,7 @@ export function setupAuth(db: RxEventsDatabase) {
   router.get(
     "/github",
     (req, res, next) => {
-      console.log("\n Authenticating with github...");
+      console.log("\n Authenticating with github route...");
       next();
     },
     passport.authenticate("github", { scope: ["user:email"] })
@@ -94,17 +94,9 @@ export function setupAuth(db: RxEventsDatabase) {
     passport.authenticate("github", {
       failureRedirect:
         `${Bun.env.FRONTEND_URL}/error` || "http://localhost:4200/error",
-    }),
-    (req, res) => {
-      console.log("\n Authenticating .. req.user", req.user);
-      console.log("Authentication successful");
-      console.log("Session ID:", req.sessionID);
-      console.log("Session:", req.session);
-      console.log("Response Headers:", res.getHeaders());
-      res.redirect(
-        `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home"
-      );
-    }
+      successRedirect:
+        `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home",
+    })
   );
 
   router.get("/isLoggedIn", (req, res) => {
