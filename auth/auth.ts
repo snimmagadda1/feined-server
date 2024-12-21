@@ -43,7 +43,7 @@ export function setupAuth(db: RxEventsDatabase) {
       ) => {
         try {
           console.log(
-            `Successfully authenticated for profileId: ${profile.id}`
+            `\n Successfully authenticated for profileId: ${profile.id}`
           );
           // Check if user exists
           const existingUser = await db.users
@@ -82,6 +82,10 @@ export function setupAuth(db: RxEventsDatabase) {
   // protected route using passport middleware
   router.get(
     "/github",
+    (req, res, next) => {
+      console.log("\n Authenticating with github...");
+      next();
+    },
     passport.authenticate("github", { scope: ["user:email"] })
   );
 
@@ -92,7 +96,7 @@ export function setupAuth(db: RxEventsDatabase) {
         `${Bun.env.FRONTEND_URL}/error` || "http://localhost:4200/error",
     }),
     (req, res) => {
-      console.log("Authenticating .. req.user", req.user);
+      console.log("\n Authenticating .. req.user", req.user);
       console.log("Authentication successful");
       console.log("Session ID:", req.sessionID);
       console.log("Session:", req.session);
@@ -108,20 +112,20 @@ export function setupAuth(db: RxEventsDatabase) {
     // console.log("sessionID", req.sessionID);
     // console.log("USER", req.user);
     if (req.isAuthenticated()) {
-      console.log("User is authenticated");
+      console.log("\n User is authenticated");
       res.json({
         authenticated: true,
         user: { ...req.user, email: undefined },
       });
     } else {
-      console.log("User is not authenticated");
+      console.log("\n User is not authenticated");
       res.json({ authenticated: false });
     }
   });
 
   router.post("/logout", (req, res, next) => {
     // First clear the login session
-    console.log("Checking authentication status...");
+    console.log("\n Checking authentication status...");
     console.log("sessionID", req.sessionID);
     console.log("USER", req.user);
     req.logout((err) => {

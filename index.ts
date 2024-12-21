@@ -1,6 +1,5 @@
 import session from "express-session";
 import { authConfig, ensureAuthenticated, setupAuth } from "./auth/auth";
-import userRoutes from "./routes/user";
 import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
 import passport from "passport";
