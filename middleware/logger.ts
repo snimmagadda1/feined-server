@@ -9,7 +9,17 @@ morgan.token("user-id", (req: Request) =>
 );
 
 // Add headers token
-morgan.token("headers", (req: Request, res: Response) => {
+morgan.token("req-headers", (req: Request, res: Response) => {
+  const headers = req.headers;
+  return (
+    "\n" +
+    Object.entries(headers)
+      .map(([key, value]) => `${colors.gray(key)}: ${value}`)
+      .join("\n")
+  );
+});
+
+morgan.token("res-headers", (req: Request, res: Response) => {
   const headers = res.getHeaders();
   return (
     "\n" +
@@ -60,7 +70,10 @@ const format = [
   "user::user-id",
   colors.gray("|"),
   ":user-agent",
-  ":headers", // Add headers to the log format
+  colors.gray("|"),
+  ":req-headers", // Add headers to the log format
+  colors.gray("|"),
+  ":res-headers", // Add headers to the log format
 ].join(" ");
 
 export const requestLogger = morgan(format);

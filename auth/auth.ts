@@ -19,9 +19,10 @@ export const authConfig = {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      domain: ".s11a.com",
       secure: process.env.NODE_ENV === "production",
-      sameSite: false,
+      sameSite: (process.env.NODE_ENV === "production" ? "strict" : "lax") as
+        | "strict"
+        | "lax",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
