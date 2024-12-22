@@ -64,7 +64,4 @@ app.use(passport.session());
 // auth handler routes
 app.use("/auth", setupAuth(db));
 
-// Protected route example
-// app.use("/user", userRoutes);
-
 await rxServer.start();
