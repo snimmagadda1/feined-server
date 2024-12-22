@@ -19,9 +19,10 @@ export const authConfig = {
     resave: false,
     saveUninitialized: false,
     cookie: {
+      domain: process.env.NODE_ENV === "production" ? ".s11a.com" : "localhost",
       secure: process.env.NODE_ENV === "production",
-      sameSite: (process.env.NODE_ENV === "production" ? "strict" : "lax") as
-        | "strict"
+      sameSite: (process.env.NODE_ENV === "production" ? "none" : "lax") as
+        | "none"
         | "lax",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
@@ -43,7 +44,7 @@ export function setupAuth(db: RxEventsDatabase) {
       ) => {
         try {
           console.log(
-            `Successfully authenticated for profileId: ${profile.id}`
+            `\n Successfully authenticated for profileId: ${profile.id}`
           );
           // Check if user exists
           const existingUser = await db.users
@@ -82,6 +83,10 @@ export function setupAuth(db: RxEventsDatabase) {
   // protected route using passport middleware
   router.get(
     "/github",
+    (req, res, next) => {
+      console.log("\n Authenticating with github route...");
+      next();
+    },
     passport.authenticate("github", { scope: ["user:email"] })
   );
 
@@ -90,34 +95,27 @@ export function setupAuth(db: RxEventsDatabase) {
     passport.authenticate("github", {
       failureRedirect:
         `${Bun.env.FRONTEND_URL}/error` || "http://localhost:4200/error",
-    }),
-    (req, res) => {
-      console.log("Authenticating .. req.user", req.user);
-      res.redirect(
-        `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home"
-      );
-    }
+      successRedirect:
+        `${Bun.env.FRONTEND_URL}/home` || "http://localhost:4200/home",
+    })
   );
 
   router.get("/isLoggedIn", (req, res) => {
-    // console.log("Checking authentication status...");
-    // console.log("sessionID", req.sessionID);
-    // console.log("USER", req.user);
     if (req.isAuthenticated()) {
-      console.log("User is authenticated");
+      console.log("\n User is authenticated");
       res.json({
         authenticated: true,
         user: { ...req.user, email: undefined },
       });
     } else {
-      console.log("User is not authenticated");
+      console.log("\n User is not authenticated");
       res.json({ authenticated: false });
     }
   });
 
   router.post("/logout", (req, res, next) => {
     // First clear the login session
-    console.log("Checking authentication status...");
+    console.log("\n Checking authentication status...");
     console.log("sessionID", req.sessionID);
     console.log("USER", req.user);
     req.logout((err) => {

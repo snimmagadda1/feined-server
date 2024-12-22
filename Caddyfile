@@ -1,7 +1,17 @@
 feined-server.s11a.com {
+  # Enable request logging
+  log {
+    output stdout
+    format console
+    level INFO
+  }
+
   # bun-app:8080 is the docker container running the Node.js application
-  # in our case it's exposed on port 4000
   reverse_proxy bun-app:8080  {
+    header_up Host {host}
+    header_up X-Real-IP {remote}
+    header_up X-Forwarded-For {remote}
+    header_up X-Forwarded-Proto {scheme}
     header_down Strict-Transport-Security max-age=31536000;
-   }
+  }
 }

@@ -12,6 +12,10 @@ const rxServer = await setupServer(db);
 
 // Access the underlying Express app
 const app = rxServer.serverApp as Express;
+
+// Server sits behind a proxy
+app.set("trust proxy", 1);
+
 // Add logger middleware
 app.use(requestLogger);
 
@@ -59,8 +63,5 @@ app.use(passport.session());
 
 // auth handler routes
 app.use("/auth", setupAuth(db));
-
-// Protected route example
-// app.use("/user", userRoutes);
 
 await rxServer.start();
