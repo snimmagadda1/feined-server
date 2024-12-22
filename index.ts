@@ -1,4 +1,4 @@
-import session from "express-session";
+import session, { MemoryStore } from "express-session";
 import { authConfig, ensureAuthenticated, setupAuth } from "./auth/auth";
 import userRoutes from "./routes/user";
 import { createDb, setupServer } from "./rxdb-server";
@@ -8,7 +8,12 @@ import cors from "cors"; // Add this import
 import { requestLogger } from "./middleware/logger";
 
 const db = await createDb();
-const rxServer = await setupServer(db);
+
+const sessionMiddleware = session({
+  ...authConfig.session,
+  store: new MemoryStore(),
+});
+const rxServer = await setupServer(db, sessionMiddleware);
 
 // Access the underlying Express app
 const app = rxServer.serverApp as Express;
@@ -30,7 +35,7 @@ app.use(
   })
 );
 
-app.use(session(authConfig.session));
+app.use(sessionMiddleware);
 // Initialize Passport and restore authentication state from session
 passport.serializeUser((user: any, done) => {
   // console.log("Serializing user:", user);
