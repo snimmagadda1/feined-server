@@ -12,6 +12,10 @@ const rxServer = await setupServer(db);
 
 // Access the underlying Express app
 const app = rxServer.serverApp as Express;
+
+// DEBUG SETTINGS
+app.set("trust proxy", 1);
+
 // Add logger middleware
 app.use(requestLogger);
 
