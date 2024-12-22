@@ -10,6 +10,7 @@ import {
   type RxEventsDatabase,
   USER_SCHEMA_LITERAL,
   type RxUserDocumentType,
+  type RxEventsCollections,
 } from "./schema";
 
 const collectionSettings = {
@@ -35,10 +36,11 @@ export async function createDb(): Promise<RxEventsDatabase> {
 
   await removeRxDatabase("feineddb", storage);
 
-  const db = await createRxDatabase<any>({
+  const db = await createRxDatabase<RxEventsCollections>({
     name: "feineddb",
     storage: storage,
   });
+
   DB = db;
   console.log("DatabaseService: created database");
 
