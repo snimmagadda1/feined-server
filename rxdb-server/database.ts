@@ -11,7 +11,10 @@ import {
   USER_SCHEMA_LITERAL,
   type RxUserDocumentType,
   type RxEventsCollections,
+  type RxEventDocumentType,
 } from "./schema";
+
+import { formatISO, startOfDay } from "date-fns";
 
 const collectionSettings = {
   ["events"]: {
@@ -57,6 +60,20 @@ export async function createDb(): Promise<RxEventsDatabase> {
 
   await db.users.bulkInsert([testUser]);
   console.log("DatabaseService: bulk insert users");
+
+  const testEvent = {
+    id: "test-event",
+    title: "Test Event",
+    description: "Test Event Description",
+    date: formatISO(startOfDay(new Date())),
+    location: "Test Event Location",
+    userId: testUser.id,
+    completed: false,
+    _deleted: false,
+  } as RxEventDocumentType;
+  
+  await db.events.bulkInsert([testEvent]);
+  console.log("DatabaseService: bulk insert events");
 
   return db;
 }

@@ -57,6 +57,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
     name: "events",
     collection: db.events,
     cors: Bun.env.CORS,
+    queryModifier: userQueryModifier, // authz
   });
   console.log("RxServer: endpoint created ", events.urlPath);
 
@@ -65,7 +66,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
     name: "users",
     collection: db.users,
     cors: Bun.env.CORS,
-    queryModifier: userQueryModifier, // TODO: testing
+    queryModifier: userQueryModifier, // authz
   });
   console.log("RxServer: endpoint created ", users.urlPath);
 
@@ -74,6 +75,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
     name: "events-rpl",
     collection: db.events,
     cors: Bun.env.CORS,
+    queryModifier: userQueryModifier, // authz
   });
   console.log("RxServer: rpl endpoint created ", replicationEndpoint.urlPath);
 
