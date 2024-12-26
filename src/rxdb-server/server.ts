@@ -13,7 +13,6 @@ type GithubAuthData = {
   id: string | null;
 };
 
-// TODO: type
 export async function setupServer(db: RxEventsDatabase, store: Store) {
   const hostname =
     process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
