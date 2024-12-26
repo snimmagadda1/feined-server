@@ -1,8 +1,7 @@
-import { type MangoQuery, type RxDatabase, type RxDocumentData } from "rxdb";
+import { type RxDatabase } from "rxdb";
 import {
   createRxServer,
   type RxServerAuthData,
-  type RxServerAuthHandler,
 } from "rxdb-server/plugins/server";
 import { RxServerAdapterExpress } from "rxdb-server/plugins/adapter-express";
 import type { RxEventsDatabase, RxUserDocumentType } from "./schema";
@@ -53,7 +52,7 @@ export async function setupServer(
     authHandler: async (
       headers: IncomingHttpHeaders
     ): Promise<RxServerAuthData<GithubAuthData>> => {
-      let mappedUser = null;
+      let id = null;
       try {
         console.warn("Auth handler called", headers);
         // TODO: use parser
@@ -77,12 +76,12 @@ export async function setupServer(
           }
         }
 
-        mappedUser = await getUserFromSessionId(
+        id = await getUserFromSessionId(
           sessionId || "",
           store
         );
 
-        if (!mappedUser) {
+        if (!id) {
           throw new Error('No user found in session');
         }
 
@@ -91,10 +90,10 @@ export async function setupServer(
         console.error('Error in rxDb authHandler', error);
         throw(error);
       }
-
+      console.log('Returning userId', id);
       return {
         data: {
-          id: mappedUser?.id, // Use the user's ID from session
+          id
         },
         validUntil: Date.now() + 1000 * 60 * 60 * 24, // 1 day // TODO:align with session
       };
@@ -114,7 +113,7 @@ export async function setupServer(
     name: "users",
     collection: db.users,
     cors: Bun.env.CORS,
-    // queryModifier: userQueryModifier, // TODO: testing
+    queryModifier: userQueryModifier, // TODO: testing
   });
   console.log("RxServer: endpoint created ", users.urlPath);
 
@@ -129,8 +128,8 @@ export async function setupServer(
   return rxServer;
 }
 
-function userQueryModifier(authData: any, query: any) {
-  if (!authData?.data?.sessionId) {
+function userQueryModifier(authData: RxServerAuthData<GithubAuthData>, query: any) {
+  if (!authData?.data?.id) {
     // If no valid session, return no results
     query.selector = {
       id: {
