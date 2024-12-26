@@ -10,7 +10,11 @@ import {
   type RxEventsDatabase,
   USER_SCHEMA_LITERAL,
   type RxUserDocumentType,
+  type RxEventsCollections,
+  type RxEventDocumentType,
 } from "./schema";
+
+import { formatISO, startOfDay } from "date-fns";
 
 const collectionSettings = {
   ["events"]: {
@@ -35,10 +39,11 @@ export async function createDb(): Promise<RxEventsDatabase> {
 
   await removeRxDatabase("feineddb", storage);
 
-  const db = await createRxDatabase<any>({
+  const db = await createRxDatabase<RxEventsCollections>({
     name: "feineddb",
     storage: storage,
   });
+
   DB = db;
   console.log("DatabaseService: created database");
 
@@ -55,6 +60,20 @@ export async function createDb(): Promise<RxEventsDatabase> {
 
   await db.users.bulkInsert([testUser]);
   console.log("DatabaseService: bulk insert users");
+
+  const testEvent = {
+    id: "test-event",
+    title: "Test Event",
+    description: "Test Event Description",
+    date: formatISO(startOfDay(new Date())),
+    location: "Test Event Location",
+    userId: testUser.id,
+    completed: false,
+    _deleted: false,
+  } as RxEventDocumentType;
+  
+  await db.events.bulkInsert([testEvent]);
+  console.log("DatabaseService: bulk insert events");
 
   return db;
 }

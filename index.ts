@@ -1,14 +1,24 @@
-import session from "express-session";
+import session, { MemoryStore } from "express-session";
 import { authConfig, ensureAuthenticated, setupAuth } from "./auth/auth";
 import userRoutes from "./routes/user";
 import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
 import passport from "passport";
-import cors from "cors"; // Add this import
+import cors from "cors";
 import { requestLogger } from "./middleware/logger";
 
+// Create RxDB instance
 const db = await createDb();
-const rxServer = await setupServer(db);
+
+// Instantiate session middlware
+const memoryStore = new MemoryStore();
+const sessionMiddleware = session({
+  ...authConfig.session,
+  store: memoryStore,
+});
+
+// Setup rx-server instance, w/ middleware used for auth
+const rxServer = await setupServer(db, memoryStore);
 
 // Access the underlying Express app
 const app = rxServer.serverApp as Express;
@@ -30,13 +40,14 @@ app.use(
   })
 );
 
-app.use(session(authConfig.session));
-// Initialize Passport and restore authentication state from session
+// Add the session middlware 
+app.use(sessionMiddleware);
+
+// Init passport with session-based auth
 passport.serializeUser((user: any, done) => {
   // console.log("Serializing user:", user);
   done(null, user.id);
 });
-
 passport.deserializeUser(async (id: string, done) => {
   try {
     // console.log("Deserializing user id:", id);
@@ -61,7 +72,7 @@ passport.deserializeUser(async (id: string, done) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-// auth handler routes
+// Use oauth2 configured routes (via passport)
 app.use("/auth", setupAuth(db));
 
 await rxServer.start();
