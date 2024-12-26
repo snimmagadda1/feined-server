@@ -62,13 +62,13 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
   console.log("RxServer: endpoint created ", events.urlPath);
 
   // users endpoint (test only)
-  const users = await rxServer.addRestEndpoint({
-    name: "users",
-    collection: db.users,
-    cors: Bun.env.CORS,
-    queryModifier: userQueryModifier, // authz
-  });
-  console.log("RxServer: endpoint created ", users.urlPath);
+  // const users = await rxServer.addRestEndpoint({
+  //   name: "users",
+  //   collection: db.users,
+  //   cors: Bun.env.CORS,
+  //   queryModifier: userQueryModifier, // authz
+  // });
+  // console.log("RxServer: endpoint created ", users.urlPath);
 
   // replication endpoint
   const replicationEndpoint = await rxServer.addReplicationEndpoint({
