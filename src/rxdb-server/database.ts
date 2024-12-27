@@ -28,7 +28,6 @@ const collectionSettings = {
 export let DB: RxEventsDatabase | null = null;
 
 export async function createDb(): Promise<RxEventsDatabase> {
-  // TODO: check dev mode
   if (process.env.NODE_ENV !== "production") {
     await import("rxdb/plugins/dev-mode").then((module) =>
       addRxPlugin(module.RxDBDevModePlugin)

@@ -38,12 +38,16 @@ const EVENT_SCHEMA_LITERAL = {
     index: {
       type: "number",
     },
+    userId: {
+      type: "string",
+      maxLength: 10,
+    },
     _deleted: {
       type: "boolean",
     },
   },
   required: ["id", "title", "date"],
-  indexes: ["date"],
+  indexes: ["date", ["userId", "date"]],
 } as const;
 
 const schemaTyped = toTypedRxJsonSchema(EVENT_SCHEMA_LITERAL);
