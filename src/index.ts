@@ -1,6 +1,6 @@
 import { createDb, setupServer } from "./rxdb-server"
 import type { Express } from "express";
-import { setupAuth, MEMORY_STORE } from "./middleware";
+import { MEMORY_STORE } from "./middleware";
 import authRoutes from "./routes/auth";
 import { setupMiddleware } from "./middleware";
 
@@ -13,10 +13,7 @@ const rxServer = await setupServer(db, MEMORY_STORE);
 // Access the underlying Express app
 const app = rxServer.serverApp as Express;
 
-// Init passport with strategy
-setupAuth(db);
-
-// Init middleware (session, CORS, passport, logging)
+// Init middleware (auth, session, CORS, passport, logging)
 setupMiddleware(app, db);
 
 // Use configured auth handler routes

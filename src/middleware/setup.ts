@@ -4,8 +4,12 @@ import { sessionMiddleware } from "./session";
 import { corsMiddleware } from "./cors";
 import passport from "passport";
 import type { RxEventsDatabase } from "../rxdb-server";
+import { setupAuth } from "./passport";
 
 export function setupMiddleware(app: Express, db: RxEventsDatabase) {
+    // Passport callback settings
+    setupAuth(db);
+
     // Server sits behind a proxy
     app.set("trust proxy", 1);
 
