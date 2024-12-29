@@ -84,7 +84,7 @@ export const USER_SCHEMA_LITERAL = {
   properties: {
     id: {
       type: "string",
-      maxLength: 100,
+      maxLength: 10,
     },
     email: {
       type: "string",

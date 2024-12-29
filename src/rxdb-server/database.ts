@@ -5,6 +5,7 @@ import {
   type RxCollectionCreator,
 } from "rxdb";
 import { getRxStorageMemory } from "rxdb/plugins/storage-memory";
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import {
   EVENTS_SCHEMA,
   type RxEventsDatabase,
@@ -33,8 +34,12 @@ export async function createDb(): Promise<RxEventsDatabase> {
       addRxPlugin(module.RxDBDevModePlugin)
     );
   }
-
-  const storage = getRxStorageMemory();
+  const bareStorage = getRxStorageMemory();
+  // wrap the validation around the main RxStorage
+  const wrappedStorage = wrappedValidateAjvStorage({
+    storage: bareStorage,
+  });
+  const storage = process.env.NODE_ENV === "production" ? bareStorage : wrappedStorage;
 
   await removeRxDatabase("feineddb", storage);
 
@@ -70,7 +75,7 @@ export async function createDb(): Promise<RxEventsDatabase> {
     completed: false,
     _deleted: false,
   } as RxEventDocumentType;
-  
+
   await db.events.bulkInsert([testEvent]);
   console.log("DatabaseService: bulk insert events");
 

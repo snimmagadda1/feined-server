@@ -37,7 +37,7 @@ export function setupAuth(db: RxEventsDatabase) {
 
                     // Create new user
                     const newUser = await db.users.insert({
-                        id: nanoid(100),
+                        id: nanoid(10),
                         email: profile.emails?.[0]?.value || "", // TODO: check if this is correct
                         name: profile.displayName || profile.username,
                         githubId: profile.id,
