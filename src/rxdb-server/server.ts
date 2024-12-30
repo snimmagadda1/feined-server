@@ -22,7 +22,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
     port: 8080,
     hostname: hostname,
     adapter: RxServerAdapterExpress,
-    cors: Bun.env.CORS,
+    cors: process.env.FRONTEND_URL || "http://localhost:4200",
     authHandler: async (
       headers: IncomingHttpHeaders
     ): Promise<RxServerAuthData<GithubAuthData>> => {
@@ -55,8 +55,8 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
   const events = await rxServer.addRestEndpoint({
     name: "events",
     collection: db.events,
-    cors: Bun.env.CORS,
-    queryModifier: userQueryModifier, // authz
+    cors: process.env.FRONTEND_URL || "http://localhost:4200",
+    queryModifier: eventQueryModifier, // authz
   });
   console.log("RxServer: endpoint created ", events.urlPath);
 
@@ -64,7 +64,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
   // const users = await rxServer.addRestEndpoint({
   //   name: "users",
   //   collection: db.users,
-  //   cors: Bun.env.CORS,
+  //   cors: process.env.FRONTEND_URL || "http://localhost:4200",
   //   queryModifier: userQueryModifier, // authz
   // });
   // console.log("RxServer: endpoint created ", users.urlPath);
@@ -73,8 +73,8 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
   const replicationEndpoint = await rxServer.addReplicationEndpoint({
     name: "events-rpl",
     collection: db.events,
-    cors: Bun.env.CORS,
-    queryModifier: userQueryModifier, // authz
+    cors: process.env.FRONTEND_URL || "http://localhost:4200",
+    queryModifier: eventQueryModifier, // authz
   });
   console.log("RxServer: rpl endpoint created ", replicationEndpoint.urlPath);
 
@@ -92,6 +92,22 @@ function userQueryModifier(authData: RxServerAuthData<GithubAuthData>, query: an
     return query;
   }
   query.selector.id = {
+    $eq: (authData.data as GithubAuthData).id,
+  };
+  return query;
+}
+
+function eventQueryModifier(authData: RxServerAuthData<GithubAuthData>, query: any) {
+  if (!authData?.data?.id) {
+    // If no valid session, return no results
+    query.selector = {
+      userId: {
+        $eq: "no-access", // Will match nothing
+      },
+    };
+    return query;
+  }
+  query.selector.userId = {
     $eq: (authData.data as GithubAuthData).id,
   };
   return query;
