@@ -2,8 +2,8 @@ import { type RxDatabase } from "rxdb";
 import {
   createRxServer,
   type RxServerAuthData,
-} from "rxdb-server/plugins/server";
-import { RxServerAdapterExpress } from "rxdb-server/plugins/adapter-express";
+} from "snn-rxdb-server/plugins/server";
+import { RxServerAdapterExpress } from "snn-rxdb-server/plugins/adapter-express";
 import type { RxEventsDatabase, RxUserDocumentType } from "./schema";
 import { getCookies, getSessionId, getUserId } from "../utils";
 import { type IncomingHttpHeaders } from "http";

@@ -26,9 +26,9 @@
     "nanoid": "^5.0.9",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
-    "rxdb": "^15.36.1",
+    "rxdb": "16.0.0-beta.10",
     "rxdb-bun-server": ".",
-    "rxdb-server": "15.38.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "snn-rxdb-server": "0.0.0"
   }
 }
