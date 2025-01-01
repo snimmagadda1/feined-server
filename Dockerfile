@@ -43,6 +43,6 @@ COPY --from=prerelease /usr/src/app/package.json ./
 ENV NODE_ENV=production
 USER bun
 EXPOSE 8080
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT [ "bun", "run", "src/index.ts" ]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:8080/events/0/query || exit 1
