@@ -31,12 +31,13 @@ FROM base AS release
 COPY --from=install /temp/prod/node_modules ./node_modules
 
 COPY --from=prerelease /usr/src/app/*.ts ./
-COPY --from=prerelease /usr/src/app/auth/*.ts ./auth/
-COPY --from=prerelease /usr/src/app/routes/*.ts ./routes/
-COPY --from=prerelease /usr/src/app/rxdb-server/*.ts ./rxdb-server/
+COPY --from=prerelease /usr/src/app/src/config/*.ts ./src/config/
+COPY --from=prerelease /usr/src/app/src/middleware/*.ts ./src/middleware/
+COPY --from=prerelease /usr/src/app/src/routes/*.ts ./src/routes/
+COPY --from=prerelease /usr/src/app/src/rxdb-server/*.ts ./src/rxdb-server/
+COPY --from=prerelease /usr/src/app/src/*.ts ./src/
 COPY --from=prerelease /usr/src/app/storage-memory-file-synced/*.ts ./storage-memory-file-synced/
 COPY --from=prerelease /usr/src/app/package.json ./
-COPY --from=prerelease /usr/src/app/middleware/*.ts ./middleware/
 
 # run the app
 ENV NODE_ENV=production
