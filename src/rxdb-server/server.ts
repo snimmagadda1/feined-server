@@ -53,7 +53,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
 
   // events endpoint
   const events = await rxServer.addRestEndpoint({
-    name: "api/events",
+    name: "events",
     collection: db.events,
     cors: process.env.FRONTEND_URL || "http://localhost:4200",
     queryModifier: eventQueryModifier, // authz
@@ -71,7 +71,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
 
   // replication endpoint
   const replicationEndpoint = await rxServer.addReplicationEndpoint({
-    name: "api/events-rpl",
+    name: "events-rpl",
     collection: db.events,
     cors: process.env.FRONTEND_URL || "http://localhost:4200",
     queryModifier: eventQueryModifier, // authz
