@@ -34,17 +34,17 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
         // Fetch userId from store
         id = await getUserId(sessionId || "", store);
         if (!id) {
-          throw new Error('No user found in session');
+          throw new Error("No user found in session");
         }
       } catch (error) {
         // Explicitly log b/c rx-server doesn't seem to...
-        console.error('Error in rxDb authHandler', error);
-        throw (error);
+        console.error("Error in rxDb authHandler", error);
+        throw error;
       }
-      console.log('Returning userId', id);
+      console.log("Returning userId", id);
       return {
         data: {
-          id
+          id,
         },
         validUntil: Date.now() + 1000 * 60 * 60 * 24, // 1 day // TODO:align with session
       };
@@ -53,7 +53,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
 
   // events endpoint
   const events = await rxServer.addRestEndpoint({
-    name: "events",
+    name: "api/events",
     collection: db.events,
     cors: process.env.FRONTEND_URL || "http://localhost:4200",
     queryModifier: eventQueryModifier, // authz
@@ -71,7 +71,7 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
 
   // replication endpoint
   const replicationEndpoint = await rxServer.addReplicationEndpoint({
-    name: "events-rpl",
+    name: "api/events-rpl",
     collection: db.events,
     cors: process.env.FRONTEND_URL || "http://localhost:4200",
     queryModifier: eventQueryModifier, // authz
@@ -81,7 +81,10 @@ export async function setupServer(db: RxEventsDatabase, store: Store) {
   return rxServer;
 }
 
-function userQueryModifier(authData: RxServerAuthData<GithubAuthData>, query: any) {
+function userQueryModifier(
+  authData: RxServerAuthData<GithubAuthData>,
+  query: any
+) {
   if (!authData?.data?.id) {
     // If no valid session, return no results
     query.selector = {
@@ -97,7 +100,10 @@ function userQueryModifier(authData: RxServerAuthData<GithubAuthData>, query: an
   return query;
 }
 
-function eventQueryModifier(authData: RxServerAuthData<GithubAuthData>, query: any) {
+function eventQueryModifier(
+  authData: RxServerAuthData<GithubAuthData>,
+  query: any
+) {
   if (!authData?.data?.id) {
     // If no valid session, return no results
     query.selector = {
