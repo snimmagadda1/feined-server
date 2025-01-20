@@ -1,6 +1,6 @@
 # feined-rxdb-server
 
-A bun + express server running the `rxdb-server` package to host a DB to allow replication between clients & the server. The backend for [feined-todo](https://github.com/snimmagadda1/feined-todo).
+A bun + express server running the `rxdb-server` package to host a DB to allow replication between clients & the server. The backend for [fickle-calendar](https://github.com/snimmagadda1/fickle-cal).
 
 ### 🏠 [Homepage](https://todo.s11a.com/)
 
