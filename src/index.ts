@@ -1,7 +1,8 @@
-import { createDb, setupServer } from "./rxdb-server"
+import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
 import { MEMORY_STORE } from "./middleware";
 import authRoutes from "./routes/auth";
+import eventsRoutes from "./routes/events";
 import { setupMiddleware } from "./middleware";
 
 // Create RxDB instance
@@ -18,5 +19,8 @@ setupMiddleware(app, db);
 
 // Use configured auth handler routes
 app.use("/auth", authRoutes);
+
+// Use events routes
+app.use("/events", eventsRoutes);
 
 await rxServer.start();

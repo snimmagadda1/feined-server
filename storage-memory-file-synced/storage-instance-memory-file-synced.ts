@@ -94,7 +94,7 @@ export class RxStorageMemoryFileSyncedInstance<RxDocType>
     const internals = this.internals;
     const documentsById = internals.documents;
     const toReturn = [];
-    for(const id of ids) {
+    for (const id of ids) {
       const found = documentsById.get(id);
       if (found && (!found?._deleted || withDeleted)) {
         toReturn.push(found);
