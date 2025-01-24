@@ -1,6 +1,6 @@
 import { createDb, setupServer } from "./rxdb-server";
 import type { Express } from "express";
-import { MEMORY_STORE } from "./middleware";
+import { isAuth, MEMORY_STORE } from "./middleware";
 import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
 import userRoutes from "./routes/user";
@@ -22,9 +22,9 @@ setupMiddleware(app, db);
 app.use("/auth", authRoutes);
 
 // Use events routes
-app.use("/events", eventsRoutes);
+app.use("/events", isAuth, eventsRoutes);
 
 // Use user routes
-app.use("/user", userRoutes);
+app.use("/user", isAuth, userRoutes);
 
 await rxServer.start();
