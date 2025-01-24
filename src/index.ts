@@ -3,6 +3,7 @@ import type { Express } from "express";
 import { MEMORY_STORE } from "./middleware";
 import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
+import userRoutes from "./routes/user";
 import { setupMiddleware } from "./middleware";
 
 // Create RxDB instance
@@ -22,5 +23,8 @@ app.use("/auth", authRoutes);
 
 // Use events routes
 app.use("/events", eventsRoutes);
+
+// Use user routes
+app.use("/user", userRoutes);
 
 await rxServer.start();
