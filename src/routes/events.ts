@@ -1,6 +1,7 @@
 import { parseISO, startOfDay } from "date-fns";
 import { Router } from "express";
 import { nanoid } from "nanoid";
+import { EVENTS_COLLECTION } from "../loaders/datastore";
 
 export type Event = {
   id: string;
@@ -15,37 +16,11 @@ export type Event = {
   _deleted: boolean;
 };
 
-type EventRequest = Omit<Event, "date"> & {
+export type EventRequest = Omit<Event, "date"> & {
   date: string;
 };
 
 const router = Router();
-
-// Map<userId -> Map<UNIX-timestamp, Event[]>>
-const EVENTS_COLLECTION = new Map<string, Map<number, Event[]>>();
-
-EVENTS_COLLECTION.set(
-  "1",
-  new Map([
-    [
-      startOfDay(new Date("2025-01-01T00:00:00.000Z")).getTime(),
-      [
-        {
-          id: nanoid(10),
-          userId: "1",
-          title: "Event 1",
-          completed: false,
-          notes: "Notes 1",
-          color: "red",
-          date: startOfDay(new Date("2025-01-01T00:00:00.000Z")),
-          timestamp: 1716537600000,
-          index: 0,
-          _deleted: false,
-        },
-      ],
-    ],
-  ])
-);
 
 router.get("/", (req, res) => {
   res.json({ message: "Hello World" });
@@ -63,7 +38,6 @@ router.get("/user/:userId", (req, res) => {
   const eventsArray: Event[] = [];
   for (const [date, events] of collection.entries()) {
     events.forEach((event) => {
-      event.date = new Date(date);
       eventsArray.push(event);
     });
   }
@@ -89,11 +63,17 @@ router.post("/user/:userId", (req, res) => {
     date: startOfDay(parseISO(event.date)),
   }));
 
-  const userData = EVENTS_COLLECTION.get(userId);
+  let userData = EVENTS_COLLECTION.get(userId);
+  if (!userData) {
+    EVENTS_COLLECTION.set(userId, new Map());
+    userData = EVENTS_COLLECTION.get(userId);
+  }
+
   toInsert.forEach((event) => {
     const events = userData?.get(event.date!.getTime());
     if (events) {
       events.push(event);
+      userData!.set(event.date!.getTime(), events);
     } else {
       userData?.set(event.date!.getTime(), [event]);
     }

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { nanoid } from "nanoid";
-import { join } from "path";
+import { USERS_COLLECTION } from "../loaders/datastore";
 
 export type User = {
   id: string;
@@ -13,20 +13,6 @@ export type User = {
 type UserRequest = Omit<User, "id">;
 
 const router = Router();
-
-// Map<oauthProfileId -> User>
-// FIXME: service
-export const USERS_COLLECTION = new Map<string, User>();
-
-// FIXME: stream this in chunks for large files
-const stored = Bun.file(join(import.meta.dir, "../data/users.json"));
-
-const users = (await stored.json()) as User[];
-users.forEach((user) => {
-  USERS_COLLECTION.set(user.id, user);
-});
-
-console.log(`Loaded ${USERS_COLLECTION.size} users`);
 
 router.post("/", (req, res) => {
   try {

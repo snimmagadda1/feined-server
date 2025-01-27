@@ -1,0 +1,38 @@
+[
+    {
+        "id": "1",
+        "userId": "1",
+        "title": "Event 1",
+        "completed": false,
+        "notes": "Notes 1",
+        "color": "red",
+        "date": "2025-01-01T00:00:00.000Z",
+        "timestamp": 1716537600000,
+        "index": 0,
+        "_deleted": false
+    },
+    {
+        "id": "2",
+        "userId": "1",
+        "title": "Event 2",
+        "completed": false,
+        "notes": "Notes 2",
+        "color": "",
+        "date": "2025-01-02T00:00:00.000Z",
+        "timestamp": 1716624000000,
+        "index": 1,
+        "_deleted": false
+    },
+    {
+        "id": "3",
+        "userId": "2",
+        "title": "Event 3",
+        "completed": false,
+        "notes": "Notes 3",
+        "color": "yellow",
+        "date": "2025-01-03T00:00:00.000Z",
+        "timestamp": 1716710400000,
+        "index": 0,
+        "_deleted": false
+    }
+]

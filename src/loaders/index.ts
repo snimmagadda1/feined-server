@@ -2,9 +2,12 @@ import rxdbLoader, { DB, RX_SERVER } from "./rxdb";
 import passportGHLoader from "./passport-gh";
 import expressLoader from "./express";
 import passportLoader from "./passport";
+import datastoreLoader from "./datastore";
 
 export default async function () {
   // TODO: await internal backend maps load
+
+  await datastoreLoader();
   console.log("TODO: backend loaded...");
 
   // TODO: await rxdb backend load (to deprecate)
