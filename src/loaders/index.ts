@@ -22,7 +22,7 @@ export default async function () {
   console.log("express loaded...");
 
   await passportLoader(app, DB);
-  console.log("passport & ssession loaded...");
+  console.log("passport & session loaded...");
 
   // FIXME: remove rxserver
   await RX_SERVER!.start();
