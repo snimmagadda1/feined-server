@@ -42,6 +42,10 @@ const collectionSettings = {
 };
 
 export let DB: RxEventsDatabase | null = null;
+// FIXME: hack
+type RxServer = ReturnType<typeof createRxServer> extends Promise<infer T>
+  ? T
+  : never;
 export let RX_SERVER: RxServer | null = null;
 
 type GithubAuthData = {
@@ -107,7 +111,10 @@ async function createDb(): Promise<Express> {
   return app;
 }
 
-async function setupServer(db: RxEventsDatabase, store: Store) {
+async function setupServer(
+  db: RxEventsDatabase,
+  store: Store
+): Promise<RxServer> {
   const hostname =
     process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
   console.log("Initializing rx-server with hostname: ", hostname);
