@@ -24,27 +24,35 @@ router.post("/", (req, res) => {
     const user = doINSERT HERE
 
     */
-  } catch (error) {}
-  const user: UserRequest = req.body;
+    const user: UserRequest = req.body;
 
-  // todo: validate user
+    // todo: validate user
 
-  // prep for insert
-  const toInsert: User = {
-    ...user,
-    id: nanoid(10),
-    _deleted: false,
-  };
+    // prep for insert
+    const toInsert: User = {
+      ...user,
+      id: nanoid(10),
+      _deleted: false,
+    };
 
-  USERS_COLLECTION.set(toInsert.id, toInsert);
+    USERS_COLLECTION.set(toInsert.id, toInsert);
 
-  res.status(200).json(toInsert);
+    res.status(200).json(toInsert);
+  } catch (error) {
+    console.error("Error during create user", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.get("/:userId", (req, res) => {
-  const { userId } = req.params;
-  const user = USERS_COLLECTION.get(userId);
-  res.status(200).json(user);
+  try {
+    const { userId } = req.params;
+    const user = USERS_COLLECTION.get(userId);
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error during get user", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;

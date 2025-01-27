@@ -13,8 +13,7 @@ export const EVENTS_COLLECTION = new Map<string, Map<number, Event[]>>();
 export default async function () {
   await loadUsers();
   await loadEvents();
-  // const interval = 1000 * 60 * 60 * 24;
-  const interval = 10000;
+  const interval = 1000 * 60 * 60 * 24;
   setInterval(() => {
     backupUsers();
   }, interval);
