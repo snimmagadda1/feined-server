@@ -1,16 +1,1 @@
-[
-    {
-        "id": "1",
-        "email": "test@test.com",
-        "name": "test",
-        "githubId": "test",
-        "_deleted": false
-    },
-    {
-        "id": "2",
-        "email": "test2@test.com",
-        "name": "test2",
-        "githubId": "test2",
-        "_deleted": false
-    }
-]
+[{"id":"1","email":"test@test.com","name":"test","githubId":"test","_deleted":false},{"id":"2","email":"test2@test.com","name":"test2","githubId":"test2","_deleted":false}]

@@ -13,7 +13,37 @@ export const EVENTS_COLLECTION = new Map<string, Map<number, Event[]>>();
 export default async function () {
   await loadUsers();
   await loadEvents();
+  // const interval = 1000 * 60 * 60 * 24;
+  const interval = 10000;
+  setInterval(() => {
+    backupUsers();
+  }, interval);
+  setInterval(() => {
+    backupEvents();
+  }, interval);
 }
+
+// FIXME: do this more efficiently
+const backupUsers = async () => {
+  const users = Array.from(USERS_COLLECTION.values());
+  await Bun.write(
+    join(import.meta.dir, "../data/users.json"),
+    JSON.stringify(users)
+  );
+  console.log("**** background job: Users backed up ****");
+};
+
+const backupEvents = async () => {
+  const allEvents = [...EVENTS_COLLECTION.values()] // Get array of timestamp Maps
+    .flatMap((timeMap) => [...timeMap.values()]) // Get arrays of events
+    .flat(); // Flatten the event arrays  console.log(allEvents);
+
+  await Bun.write(
+    join(import.meta.dir, "../data/events.json"),
+    JSON.stringify(allEvents)
+  );
+  console.log("**** background job: Events backed up ****");
+};
 
 const loadUsers = async () => {
   // FIXME: stream this in chunks for large files
