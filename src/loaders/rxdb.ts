@@ -1,19 +1,113 @@
-import { type RxDatabase } from "rxdb";
+// Node.js built-in modules
+import { type IncomingHttpHeaders } from "http";
+
+// External dependencies (third-party packages)
+import { formatISO, startOfDay } from "date-fns";
+import type { Express } from "express";
+import type { Store } from "express-session";
+import {
+  addRxPlugin,
+  createRxDatabase,
+  removeRxDatabase,
+  type RxCollectionCreator,
+  type RxDatabase,
+} from "rxdb";
+import { getRxStorageMemory } from "rxdb/plugins/storage-memory";
+import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv";
 import {
   createRxServer,
   type RxServerAuthData,
 } from "snn-rxdb-server/plugins/server";
 import { RxServerAdapterExpress } from "snn-rxdb-server/plugins/adapter-express";
-import type { RxEventsDatabase, RxUserDocumentType } from "./schema";
-import { getCookies, getSessionId, getUserId } from "../utils";
-import { type IncomingHttpHeaders } from "http";
-import type { Store } from "express-session";
+
+// Internal modules (your application code)
+import { MEMORY_STORE } from "../middleware/session";
+import {
+  EVENTS_SCHEMA,
+  USER_SCHEMA_LITERAL,
+  type RxEventsCollections,
+  type RxEventsDatabase,
+  type RxEventDocumentType,
+  type RxUserDocumentType,
+} from "../rxdb-server/schema";
+import { getCookies, getSessionId, getUserId } from "../utils/session";
+
+const collectionSettings = {
+  ["events"]: {
+    schema: EVENTS_SCHEMA,
+  } as RxCollectionCreator<any>,
+  ["users"]: {
+    schema: USER_SCHEMA_LITERAL,
+  } as RxCollectionCreator<any>,
+};
+
+export let DB: RxEventsDatabase | null = null;
+export let RX_SERVER: RxServer | null = null;
 
 type GithubAuthData = {
   id: string | null;
 };
 
-export async function setupServer(db: RxEventsDatabase, store: Store) {
+async function createDb(): Promise<Express> {
+  if (process.env.NODE_ENV !== "production") {
+    await import("rxdb/plugins/dev-mode").then((module) =>
+      addRxPlugin(module.RxDBDevModePlugin)
+    );
+  }
+  const bareStorage = getRxStorageMemory();
+  // wrap the validation around the main RxStorage
+  const wrappedStorage = wrappedValidateAjvStorage({
+    storage: bareStorage,
+  });
+  const storage =
+    process.env.NODE_ENV === "production" ? bareStorage : wrappedStorage;
+
+  await removeRxDatabase("feineddb", storage);
+
+  const db = await createRxDatabase<RxEventsCollections>({
+    name: "feineddb",
+    storage: storage,
+  });
+
+  DB = db;
+  console.log("DatabaseService: created database");
+
+  await db.addCollections(collectionSettings);
+
+  console.log("DatabaseService: create collections");
+
+  const testUser = {
+    id: "test-user",
+    email: "test@test.com",
+    name: "Test User",
+    githubId: "test-githubId-id",
+  } as RxUserDocumentType;
+
+  await db.users.bulkInsert([testUser]);
+  console.log("DatabaseService: bulk insert users");
+
+  const testEvent = {
+    id: "test-event",
+    title: "Test Event",
+    description: "Test Event Description",
+    date: formatISO(startOfDay(new Date())),
+    location: "Test Event Location",
+    userId: testUser.id,
+    completed: false,
+    _deleted: false,
+  } as RxEventDocumentType;
+
+  await db.events.bulkInsert([testEvent]);
+  console.log("DatabaseService: bulk insert events");
+
+  const rxServer = await setupServer(db, MEMORY_STORE);
+  RX_SERVER = rxServer;
+  // Access the underlying Express app
+  const app = rxServer.serverApp as Express;
+  return app;
+}
+
+async function setupServer(db: RxEventsDatabase, store: Store) {
   const hostname =
     process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
   console.log("Initializing rx-server with hostname: ", hostname);
@@ -117,4 +211,8 @@ function eventQueryModifier(
     $eq: (authData.data as GithubAuthData).id,
   };
   return query;
+}
+
+export default async function (): Promise<Express> {
+  return await createDb();
 }
