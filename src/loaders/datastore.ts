@@ -51,8 +51,8 @@ const loadEvents = async () => {
     events.push(event);
     userData!.set(event.date!.getTime(), events);
   });
-  console.log(`Loaded events for ${EVENTS_COLLECTION.size} distinct users`);
+  console.log(`Loaded documents for ${EVENTS_COLLECTION.size} distinct users`);
   for (const [userId, events] of EVENTS_COLLECTION.entries()) {
-    console.log(`${userId} has ${events.size} events`);
+    console.log(`User ${userId} has ${events.size} documents`);
   }
 };

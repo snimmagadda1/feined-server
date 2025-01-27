@@ -1,8 +1,9 @@
-import rxdbLoader, { DB, RX_SERVER } from "./rxdb";
+import rxdbLoader, { DB, _RX_SERVER } from "./rxdb";
 import passportGHLoader from "./passport-gh";
 import expressLoader from "./express";
 import passportLoader from "./passport";
 import datastoreLoader from "./datastore";
+import datastoreRxdbLoader from "./datastore-rxdb";
 
 export default async function () {
   // TODO: await internal backend maps load
@@ -12,6 +13,7 @@ export default async function () {
 
   // TODO: await rxdb backend load (to deprecate)
   const app = await rxdbLoader();
+  await datastoreRxdbLoader();
   console.log("rxdb schema & backend loaded...");
 
   // Auth methods
@@ -28,5 +30,5 @@ export default async function () {
   console.log("passport & session loaded...");
 
   // FIXME: remove rxserver
-  await RX_SERVER!.start();
+  await _RX_SERVER!.start();
 }

@@ -42,11 +42,9 @@ const collectionSettings = {
 };
 
 export let DB: RxEventsDatabase | null = null;
+
 // FIXME: hack
-type RxServer = ReturnType<typeof createRxServer> extends Promise<infer T>
-  ? T
-  : never;
-export let RX_SERVER: RxServer | null = null;
+export let _RX_SERVER: any = null;
 
 type GithubAuthData = {
   id: string | null;
@@ -105,16 +103,13 @@ async function createDb(): Promise<Express> {
   console.log("DatabaseService: bulk insert events");
 
   const rxServer = await setupServer(db, MEMORY_STORE);
-  RX_SERVER = rxServer;
+  _RX_SERVER = rxServer;
   // Access the underlying Express app
   const app = rxServer.serverApp as Express;
   return app;
 }
 
-async function setupServer(
-  db: RxEventsDatabase,
-  store: Store
-): Promise<RxServer> {
+async function setupServer(db: RxEventsDatabase, store: Store) {
   const hostname =
     process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
   console.log("Initializing rx-server with hostname: ", hostname);
