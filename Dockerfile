@@ -37,7 +37,6 @@ COPY --from=prerelease /usr/src/app/src/routes/*.ts ./src/routes/
 COPY --from=prerelease /usr/src/app/src/utils/*.ts ./src/utils/
 COPY --from=prerelease /usr/src/app/src/rxdb-server/*.ts ./src/rxdb-server/
 COPY --from=prerelease /usr/src/app/src/*.ts ./src/
-COPY --from=prerelease /usr/src/app/storage-memory-file-synced/*.ts ./storage-memory-file-synced/
 COPY --from=prerelease /usr/src/app/package.json ./
 
 # run the app
