@@ -4,6 +4,7 @@ import expressLoader from "./express";
 import passportLoader from "./passport";
 import datastoreLoader from "./datastore";
 import datastoreRxdbLoader from "./datastore-rxdb";
+import loggersLoader from "./loggers";
 
 export default async function () {
   // TODO: await internal backend maps load
@@ -16,6 +17,7 @@ export default async function () {
   await datastoreRxdbLoader();
   console.log("rxdb schema & backend loaded...");
 
+  await loggersLoader(app);
   // Auth methods
   if (!DB) {
     throw new Error("DB required for passport loader");

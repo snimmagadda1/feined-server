@@ -10,7 +10,7 @@ export default async function (app: Express) {
   app.set("trust proxy", 1);
 
   // Add logger middleware
-  app.use(requestLogger);
+  // app.use(requestLogger);
 
   // Add the CORS middleware
   app.use(corsMiddleware);
