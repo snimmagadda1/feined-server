@@ -36,7 +36,12 @@ COPY --from=prerelease /usr/src/app/src/middleware/*.ts ./src/middleware/
 COPY --from=prerelease /usr/src/app/src/routes/*.ts ./src/routes/
 COPY --from=prerelease /usr/src/app/src/utils/*.ts ./src/utils/
 COPY --from=prerelease /usr/src/app/src/rxdb-server/*.ts ./src/rxdb-server/
+COPY --from=prerelease /usr/src/app/src/loaders/*.ts ./src/loaders/
 COPY --from=prerelease /usr/src/app/src/*.ts ./src/
+
+# Data files 
+COPY --from=prerelease /usr/src/app/src/data/*.json ./src/data/
+
 COPY --from=prerelease /usr/src/app/package.json ./
 
 # run the app
