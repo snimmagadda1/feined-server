@@ -71,11 +71,7 @@ const loadUsers = async () => {
 
 const loadEvents = async () => {
   const stored = Bun.file(join(import.meta.dir, "../data/events.json"));
-  console.log(stored);
-  console.log(await stored.json());
-
   const events = (await stored.json()) as EventRequest[];
-
   const eventsData: Event[] = [];
   events.forEach((event) => {
     eventsData.push({
