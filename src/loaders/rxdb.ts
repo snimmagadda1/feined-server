@@ -31,6 +31,7 @@ import {
   type RxUserDocumentType,
 } from "../rxdb-server/schema";
 import { getCookies, getSessionId, getUserId } from "../utils/session";
+import logger from "../utils/logger";
 
 const collectionSettings = {
   ["events"]: {
@@ -72,11 +73,11 @@ async function createDb(): Promise<Express> {
   });
 
   DB = db;
-  console.log("DatabaseService: created database");
+  logger.info("DatabaseService: created database");
 
   await db.addCollections(collectionSettings);
 
-  console.log("DatabaseService: create collections");
+  logger.info("DatabaseService: create collections");
 
   const testUser = {
     id: "test-user",
@@ -86,7 +87,7 @@ async function createDb(): Promise<Express> {
   } as RxUserDocumentType;
 
   await db.users.bulkInsert([testUser]);
-  console.log("DatabaseService: bulk insert users");
+  logger.info("DatabaseService: bulk insert users");
 
   const testEvent = {
     id: "test-event",
@@ -100,7 +101,7 @@ async function createDb(): Promise<Express> {
   } as RxEventDocumentType;
 
   await db.events.bulkInsert([testEvent]);
-  console.log("DatabaseService: bulk insert events");
+  logger.info("DatabaseService: bulk insert events");
 
   const rxServer = await setupServer(db, MEMORY_STORE);
   _RX_SERVER = rxServer;
@@ -112,7 +113,7 @@ async function createDb(): Promise<Express> {
 async function setupServer(db: RxEventsDatabase, store: Store) {
   const hostname =
     process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
-  console.log("Initializing rx-server with hostname: ", hostname);
+  logger.info("Initializing rx-server with hostname: ", hostname);
   const rxServer = await createRxServer({
     database: db as unknown as RxDatabase,
     port: 8080,
@@ -134,10 +135,10 @@ async function setupServer(db: RxEventsDatabase, store: Store) {
         }
       } catch (error) {
         // Explicitly log b/c rx-server doesn't seem to...
-        console.error("Error in rxDb authHandler", error);
+        logger.error("Error in rxDb authHandler", error);
         throw error;
       }
-      console.log("Returning userId", id);
+      logger.info("Returning userId", id);
       return {
         data: {
           id,
@@ -154,7 +155,7 @@ async function setupServer(db: RxEventsDatabase, store: Store) {
     cors: process.env.FRONTEND_URL || "http://localhost:4200",
     queryModifier: eventQueryModifier, // authz
   });
-  console.log("RxServer: endpoint created ", events.urlPath);
+  logger.info("RxServer: endpoint created ", events.urlPath);
 
   // users endpoint (test only)
   // const users = await rxServer.addRestEndpoint({
@@ -163,7 +164,7 @@ async function setupServer(db: RxEventsDatabase, store: Store) {
   //   cors: process.env.FRONTEND_URL || "http://localhost:4200",
   //   queryModifier: userQueryModifier, // authz
   // });
-  // console.log("RxServer: endpoint created ", users.urlPath);
+  // logger.info("RxServer: endpoint created ", users.urlPath);
 
   // replication endpoint
   const replicationEndpoint = await rxServer.addReplicationEndpoint({
@@ -172,7 +173,7 @@ async function setupServer(db: RxEventsDatabase, store: Store) {
     cors: process.env.FRONTEND_URL || "http://localhost:4200",
     queryModifier: eventQueryModifier, // authz
   });
-  console.log("RxServer: rpl endpoint created ", replicationEndpoint.urlPath);
+  logger.info("RxServer: rpl endpoint created ", replicationEndpoint.urlPath);
 
   return rxServer;
 }
