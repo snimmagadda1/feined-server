@@ -23,11 +23,11 @@ export default async function () {
   await passportGHLoader(DB);
   console.log("GH passport loaded...");
 
-  await expressLoader(app);
-  console.log("express loaded...");
-
   await passportLoader(app, DB);
   console.log("passport & session loaded...");
+
+  await expressLoader(app);
+  console.log("express loaded...");
 
   // FIXME: remove rxserver
   await _RX_SERVER!.start();

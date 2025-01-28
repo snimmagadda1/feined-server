@@ -1,5 +1,5 @@
 import type { Express } from "express";
-import { corsMiddleware, sessionMiddleware } from "../middleware";
+import { corsMiddleware } from "../middleware";
 import { requestLogger } from "../middleware";
 import authRoutes from "../routes/auth";
 import eventsRoutes from "../routes/events";
@@ -11,9 +11,6 @@ export default async function (app: Express) {
 
   // Add logger middleware
   app.use(requestLogger);
-
-  // Add the session middleware
-  app.use(sessionMiddleware);
 
   // Add the CORS middleware
   app.use(corsMiddleware);
