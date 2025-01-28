@@ -5,15 +5,29 @@ import { parseISO } from "date-fns";
 
 // Map<oauthProfileId -> User>
 // FIXME: service
-export const USERS_COLLECTION = new Map<string, User>();
+export let USERS_COLLECTION = new Map<string, User>();
 
 // Map<userId -> Map<UNIX-timestamp, Event[]>>
-export const EVENTS_COLLECTION = new Map<string, Map<number, Event[]>>();
+export let EVENTS_COLLECTION = new Map<string, Map<number, Event[]>>();
+
+export function dangerouslySetEventsCollection(
+  eventsCollection: Map<string, Map<number, Event[]>>
+) {
+  EVENTS_COLLECTION = eventsCollection;
+}
+
+export function dangerouslySetUsersCollection(
+  usersCollection: Map<string, User>
+) {
+  USERS_COLLECTION = usersCollection;
+}
 
 export default async function () {
   await loadUsers();
   await loadEvents();
-  const interval = 1000 * 60 * 60 * 24;
+  // FIXME: params
+  // const interval = 1000 * 60 * 60 * 24;
+  const interval = 10000;
   setInterval(() => {
     backupUsers();
   }, interval);
