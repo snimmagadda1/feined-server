@@ -5,17 +5,18 @@ import passportLoader from "./passport";
 import datastoreLoader from "./datastore";
 import datastoreRxdbLoader from "./datastore-rxdb";
 import loggersLoader from "./loggers";
+import logger from "../utils/logger";
 
 export default async function () {
   // TODO: await internal backend maps load
 
   await datastoreLoader();
-  console.log("TODO: backend loaded...");
+  logger.info("TODO: backend loaded...");
 
   // TODO: await rxdb backend load (to deprecate)
   const app = await rxdbLoader();
   await datastoreRxdbLoader();
-  console.log("rxdb schema & backend loaded...");
+  logger.info("rxdb schema & backend loaded...");
 
   await loggersLoader(app);
   // Auth methods
@@ -23,13 +24,13 @@ export default async function () {
     throw new Error("DB required for passport loader");
   }
   await passportGHLoader(DB);
-  console.log("GH passport loaded...");
+  logger.info("GH passport loaded...");
 
   await passportLoader(app, DB);
-  console.log("passport & session loaded...");
+  logger.info("passport & session loaded...");
 
   await expressLoader(app);
-  console.log("express loaded...");
+  logger.info("express loaded...");
 
   // FIXME: remove rxserver
   await _RX_SERVER!.start();

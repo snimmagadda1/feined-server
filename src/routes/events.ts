@@ -3,6 +3,7 @@ import { Router } from "express";
 import { nanoid } from "nanoid";
 import { EVENTS_COLLECTION } from "../loaders/datastore";
 import { type Event, type EventRequest } from "../models";
+import logger from "../utils/logger";
 
 const router = Router();
 
@@ -26,7 +27,7 @@ router.get("/user/:userId", (req, res) => {
 
     res.status(200).json(eventsArray);
   } catch (error) {
-    console.error(`Error during get user events for userId ${userId}`, error);
+    logger.error(`Error during get user events for userId ${userId}`, error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -69,7 +70,7 @@ router.post("/user/:userId", (req, res) => {
 
     res.status(200).json(toAdd);
   } catch (error) {
-    console.error(`Error during add user events for userId ${userId}`, error);
+    logger.error(`Error during add user events for userId ${userId}`, error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

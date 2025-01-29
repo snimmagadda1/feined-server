@@ -1,5 +1,4 @@
 import { DB } from "./rxdb";
-
 import {
   dangerouslySetEventsCollection,
   dangerouslySetUsersCollection,
@@ -7,9 +6,10 @@ import {
   USERS_COLLECTION,
 } from "./datastore";
 import type { RxEventDocumentType } from "../rxdb-server/schema";
-import type { User } from "../routes/users";
+import type { User } from "../models";
 import { parseISO } from "date-fns";
-import type { Event } from "../routes/events";
+import type { Event } from "../models";
+import logger from "../utils/logger";
 
 export default async function () {
   if (!DB) {
@@ -25,16 +25,16 @@ export default async function () {
     );
   }
 
-  console.log("Attempting to insert users...");
+  logger.info("Attempting to insert users...");
   const result1 = await userCollection.bulkInsert([
     ...USERS_COLLECTION.values(),
   ]);
 
-  console.log("Attempting to insert events...");
+  logger.info("Attempting to insert events...");
 
   const allEvents = [...EVENTS_COLLECTION.values()] // Get array of timestamp Maps
     .flatMap((timeMap) => [...timeMap.values()]) // Get arrays of events
-    .flat(); // Flatten the event arrays  console.log(allEvents);
+    .flat(); // Flatten the event arrays
 
   const allEventDocs = allEvents.map((event) => ({
     ...event,
@@ -57,7 +57,7 @@ export default async function () {
 const syncUsers = async () => {
   const usersCollection = DB!.users;
   const allUsers = await usersCollection.find().exec();
-  console.log(`Syncing users count ${allUsers.length}...`);
+  logger.info(`Syncing users count ${allUsers.length}...`);
   const datastore = new Map<string, User>();
   allUsers.forEach((user) => {
     const toAdd: User = {
@@ -70,13 +70,13 @@ const syncUsers = async () => {
     datastore.set(user.id, toAdd);
   });
   dangerouslySetUsersCollection(datastore);
-  console.log("Synced users");
+  logger.info("Synced users");
 };
 
 const syncEvents = async () => {
   const eventsCollection = DB!.events;
   const allEvents = await eventsCollection.find().exec();
-  console.log(`Syncing events count ${allEvents.length}...`);
+  logger.info(`Syncing events count ${allEvents.length}...`);
   const datastore = new Map<string, Map<number, Event[]>>();
   allEvents.forEach((event) => {
     const userId = event.userId!;
@@ -106,5 +106,5 @@ const syncEvents = async () => {
     }
   });
   dangerouslySetEventsCollection(datastore);
-  console.log("Synced events");
+  logger.info("Synced events");
 };
