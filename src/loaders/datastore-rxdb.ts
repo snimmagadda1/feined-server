@@ -1,11 +1,10 @@
 import { DB } from "./rxdb";
-import { dangerouslySetEventsCollection, EVENTS_COLLECTION } from "./datastore";
 import type { RxEventDocumentType } from "../rxdb-server/schema";
 import type { User } from "../models";
 import { parseISO } from "date-fns";
 import type { Event } from "../models";
 import logger from "../utils/logger";
-import userService from "../services/user-service";
+import { userService, eventService } from "../services";
 
 export default async function () {
   if (!DB) {
@@ -24,9 +23,7 @@ export default async function () {
   const result1 = await userCollection.bulkInsert(userService.getAllUsers());
 
   logger.info("Attempting to insert events...");
-  const allEvents = [...EVENTS_COLLECTION.values()] // Get array of timestamp Maps
-    .flatMap((timeMap) => [...timeMap.values()]) // Get arrays of events
-    .flat(); // Flatten the event arrays
+  const allEvents = eventService.getAllEvents();
   const allEventDocs = allEvents.map((event) => ({
     ...event,
     date: event.date.toISOString(),
@@ -95,6 +92,6 @@ const syncEvents = async () => {
       userData?.set(mapped.date!.getTime(), [mapped]);
     }
   });
-  dangerouslySetEventsCollection(datastore);
+  eventService.dangerouslySetEventsCollection(datastore);
   logger.info("Synced events");
 };

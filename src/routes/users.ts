@@ -1,9 +1,7 @@
 import { Router } from "express";
-import { nanoid } from "nanoid";
-import { USERS_COLLECTION } from "../loaders/datastore";
 import { type User, type UserRequest } from "../models";
 import logger from "../utils/logger";
-import userService from "../services/user-service";
+import { userService } from "../services";
 
 const router = Router();
 

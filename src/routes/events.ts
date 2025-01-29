@@ -1,9 +1,7 @@
-import { parseISO, startOfDay } from "date-fns";
 import { Router } from "express";
-import { nanoid } from "nanoid";
-import { EVENTS_COLLECTION } from "../loaders/datastore";
 import { type Event, type EventRequest } from "../models";
 import logger from "../utils/logger";
+import { eventService } from "../services";
 
 const router = Router();
 
@@ -11,7 +9,7 @@ router.get("/user/:userId", (req, res) => {
   let userId = null;
   try {
     userId = req.params.userId;
-    const collection = EVENTS_COLLECTION.get(userId);
+    const collection = eventService.getUserEvents(userId);
     if (!collection) {
       res.status(200).json([]);
       return;
@@ -46,29 +44,13 @@ router.post("/user/:userId", (req, res) => {
     // todo: validate events (order, types, etc)
 
     // prep for insert
-    const toInsert: Event[] = toAdd.map((event) => ({
-      ...event,
-      id: nanoid(10),
-      date: startOfDay(parseISO(event.date)),
-    }));
-
-    let userData = EVENTS_COLLECTION.get(userId);
-    if (!userData) {
-      EVENTS_COLLECTION.set(userId, new Map());
-      userData = EVENTS_COLLECTION.get(userId);
-    }
-
-    toInsert.forEach((event) => {
-      const events = userData?.get(event.date!.getTime());
-      if (events) {
-        events.push(event);
-        userData!.set(event.date!.getTime(), events);
-      } else {
-        userData?.set(event.date!.getTime(), [event]);
-      }
+    const addedEvents: Event[] = [];
+    toAdd.forEach((event) => {
+      const added = eventService.createEvent(event);
+      addedEvents.push(added);
     });
 
-    res.status(200).json(toAdd);
+    res.status(200).json(addedEvents);
   } catch (error) {
     logger.error(`Error during add user events for userId ${userId}`, error);
     res.status(500).json({ error: "Internal server error" });
@@ -77,7 +59,7 @@ router.post("/user/:userId", (req, res) => {
 
 // TODO: check if user exists in datastore (service)
 const _hasUser = (userId: string) => {
-  return EVENTS_COLLECTION.has(userId);
+  return eventService.getUserEvents(userId) !== null;
 };
 
 export default router;
