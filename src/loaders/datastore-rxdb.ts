@@ -1,15 +1,11 @@
 import { DB } from "./rxdb";
-import {
-  dangerouslySetEventsCollection,
-  dangerouslySetUsersCollection,
-  EVENTS_COLLECTION,
-  USERS_COLLECTION,
-} from "./datastore";
+import { dangerouslySetEventsCollection, EVENTS_COLLECTION } from "./datastore";
 import type { RxEventDocumentType } from "../rxdb-server/schema";
 import type { User } from "../models";
 import { parseISO } from "date-fns";
 import type { Event } from "../models";
 import logger from "../utils/logger";
+import userService from "../services/user-service";
 
 export default async function () {
   if (!DB) {
@@ -18,7 +14,6 @@ export default async function () {
 
   const userCollection = DB.users;
   const eventsCollection = DB.events;
-
   if (!userCollection || !eventsCollection) {
     throw new Error(
       "user or events collection required for datastore-rxdb loader"
@@ -26,26 +21,21 @@ export default async function () {
   }
 
   logger.info("Attempting to insert users...");
-  const result1 = await userCollection.bulkInsert([
-    ...USERS_COLLECTION.values(),
-  ]);
+  const result1 = await userCollection.bulkInsert(userService.getAllUsers());
 
   logger.info("Attempting to insert events...");
-
   const allEvents = [...EVENTS_COLLECTION.values()] // Get array of timestamp Maps
     .flatMap((timeMap) => [...timeMap.values()]) // Get arrays of events
     .flat(); // Flatten the event arrays
-
   const allEventDocs = allEvents.map((event) => ({
     ...event,
     date: event.date.toISOString(),
   })) as RxEventDocumentType[];
-
   const result2 = await eventsCollection.bulkInsert(allEventDocs);
 
   // FIXME: params
-  const interval = 1000 * 60 * 60 * 24;
-  // const interval = 10000;
+  // const interval = 1000 * 60 * 60 * 24;
+  const interval = 10000;
   setInterval(() => {
     syncUsers();
   }, interval);
@@ -69,7 +59,7 @@ const syncUsers = async () => {
     };
     datastore.set(user.id, toAdd);
   });
-  dangerouslySetUsersCollection(datastore);
+  userService.dangerouslySetUsersCollection(datastore);
   logger.info("Synced users");
 };
 

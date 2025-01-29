@@ -2,10 +2,7 @@ import { join } from "path";
 import { parseISO } from "date-fns";
 import type { Event, EventRequest, User } from "../models";
 import logger from "../utils/logger";
-
-// Map<oauthProfileId -> User>
-// FIXME: service
-export let USERS_COLLECTION = new Map<string, User>();
+import userService from "../services/user-service";
 
 // Map<userId -> Map<UNIX-timestamp, Event[]>>
 export let EVENTS_COLLECTION = new Map<string, Map<number, Event[]>>();
@@ -16,18 +13,12 @@ export function dangerouslySetEventsCollection(
   EVENTS_COLLECTION = eventsCollection;
 }
 
-export function dangerouslySetUsersCollection(
-  usersCollection: Map<string, User>
-) {
-  USERS_COLLECTION = usersCollection;
-}
-
 export default async function () {
   await loadUsers();
   await loadEvents();
   // FIXME: params
-  const interval = 1000 * 60 * 60 * 24;
-  // const interval = 10000;
+  // const interval = 1000 * 60 * 60 * 24;
+  const interval = 10000;
   setInterval(() => {
     backupUsers();
   }, interval);
@@ -38,12 +29,12 @@ export default async function () {
 
 // FIXME: do this more efficiently
 const backupUsers = async () => {
-  const users = Array.from(USERS_COLLECTION.values());
+  const users = userService.getAllUsers();
   await Bun.write(
     join(import.meta.dir, "../data/users.json"),
     JSON.stringify(users)
   );
-  logger.info("**** background job: Users backed up ****");
+  logger.info("____ background job: Users backed up ____");
 };
 
 const backupEvents = async () => {
@@ -55,7 +46,7 @@ const backupEvents = async () => {
     join(import.meta.dir, "../data/events.json"),
     JSON.stringify(allEvents)
   );
-  logger.info("**** background job: Events backed up ****");
+  logger.info("____ background job: Events backed up ____");
 };
 
 const loadUsers = async () => {
@@ -63,10 +54,11 @@ const loadUsers = async () => {
   const stored = Bun.file(join(import.meta.dir, "../data/users.json"));
 
   const users = (await stored.json()) as User[];
+  logger.info(`Retrieved ${users.length} users from file`);
   users.forEach((user) => {
-    USERS_COLLECTION.set(user.id, user);
+    userService.createUser(user);
   });
-  logger.info(`Loaded ${USERS_COLLECTION.size} users`);
+  logger.info(`Loaded ${userService.getAllUsers().length} users`);
 };
 
 const loadEvents = async () => {

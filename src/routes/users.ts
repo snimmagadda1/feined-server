@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { USERS_COLLECTION } from "../loaders/datastore";
 import { type User, type UserRequest } from "../models";
 import logger from "../utils/logger";
+import userService from "../services/user-service";
 
 const router = Router();
 
@@ -16,20 +17,12 @@ router.post("/", (req, res) => {
     const user = doINSERT HERE
 
     */
-    const user: UserRequest = req.body;
+    const userRequest: UserRequest = req.body;
 
     // todo: validate user
+    const user = userService.createUser(userRequest);
 
-    // prep for insert
-    const toInsert: User = {
-      ...user,
-      id: nanoid(10),
-      _deleted: false,
-    };
-
-    USERS_COLLECTION.set(toInsert.id, toInsert);
-
-    res.status(200).json(toInsert);
+    res.status(200).json(user);
   } catch (error) {
     logger.error("Error during create user", error);
     res.status(500).json({ error: "Internal server error" });
@@ -39,7 +32,11 @@ router.post("/", (req, res) => {
 router.get("/:userId", (req, res) => {
   try {
     const { userId } = req.params;
-    const user = USERS_COLLECTION.get(userId);
+    const user = userService.getUser(userId);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
     res.status(200).json(user);
   } catch (error) {
     logger.error("Error during get user", error);

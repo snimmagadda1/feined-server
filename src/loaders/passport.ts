@@ -3,6 +3,8 @@ import passport from "passport";
 import type { RxEventsDatabase } from "../rxdb-server";
 import { sessionMiddleware } from "../middleware/session";
 import logger from "../utils/logger";
+
+// FIXME: Has a dependency on rxdb for now...
 export default async function (app: Express, db: RxEventsDatabase) {
   // Add the session middleware
   app.use(sessionMiddleware);

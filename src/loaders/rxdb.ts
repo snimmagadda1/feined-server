@@ -81,7 +81,7 @@ async function createDb(): Promise<Express> {
 
   const testUser = {
     id: "test-user",
-    email: "test@test.com",
+    email: "new-test@sharklasers.com",
     name: "Test User",
     githubId: "test-githubId-id",
   } as RxUserDocumentType;
