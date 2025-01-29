@@ -2,23 +2,7 @@ import { parseISO, startOfDay } from "date-fns";
 import { Router } from "express";
 import { nanoid } from "nanoid";
 import { EVENTS_COLLECTION } from "../loaders/datastore";
-
-export type Event = {
-  id: string;
-  title: string;
-  date: Date;
-  completed: boolean;
-  notes: string;
-  color: string;
-  timestamp: number;
-  index: number;
-  userId: string;
-  _deleted: boolean;
-};
-
-export type EventRequest = Omit<Event, "date"> & {
-  date: string;
-};
+import { type Event, type EventRequest } from "../models";
 
 const router = Router();
 

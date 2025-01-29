@@ -1,16 +1,7 @@
 import { Router } from "express";
 import { nanoid } from "nanoid";
 import { USERS_COLLECTION } from "../loaders/datastore";
-
-export type User = {
-  id: string;
-  email: string;
-  name: string;
-  githubId: string;
-  _deleted: boolean;
-};
-
-type UserRequest = Omit<User, "id">;
+import { type User, type UserRequest } from "../models";
 
 const router = Router();
 

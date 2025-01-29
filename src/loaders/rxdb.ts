@@ -24,12 +24,12 @@ import { RxServerAdapterExpress } from "snn-rxdb-server/plugins/adapter-express"
 import { MEMORY_STORE } from "../middleware/session";
 import {
   EVENTS_SCHEMA,
-  USER_SCHEMA_LITERAL,
+  USER_SCHEMA,
   type RxEventsCollections,
   type RxEventsDatabase,
   type RxEventDocumentType,
   type RxUserDocumentType,
-} from "../rxdb-server/schema";
+} from "../models";
 import { getCookies, getSessionId, getUserId } from "../utils/session";
 import logger from "../utils/logger";
 
@@ -38,9 +38,9 @@ const collectionSettings = {
     schema: EVENTS_SCHEMA,
   } as RxCollectionCreator<any>,
   ["users"]: {
-    schema: USER_SCHEMA_LITERAL,
+    schema: USER_SCHEMA,
   } as RxCollectionCreator<any>,
-};
+} as const;
 
 export let DB: RxEventsDatabase | null = null;
 

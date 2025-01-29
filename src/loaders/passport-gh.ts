@@ -4,7 +4,7 @@ import { authConfig } from "../config";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { type Profile as GitHubProfile } from "passport-github2";
 import { type VerifyCallback } from "passport-oauth2";
-import type { RxEventsDatabase } from "../rxdb-server";
+import { type RxEventsDatabase } from "../models";
 
 // FIXME: Has a dependency on rxdb for now...
 export default async function (db: RxEventsDatabase) {

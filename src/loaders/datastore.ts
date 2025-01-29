@@ -1,7 +1,6 @@
 import { join } from "path";
-import type { User } from "../routes/users";
-import type { Event, EventRequest } from "../routes/events";
 import { parseISO } from "date-fns";
+import type { Event, EventRequest, User } from "../models";
 
 // Map<oauthProfileId -> User>
 // FIXME: service
