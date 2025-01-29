@@ -4,7 +4,8 @@ import { authConfig } from "../config";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { type Profile as GitHubProfile } from "passport-github2";
 import { type VerifyCallback } from "passport-oauth2";
-import type { RxEventsDatabase } from "../rxdb-server";
+import { type RxEventsDatabase } from "../models";
+import logger from "../utils/logger";
 
 // FIXME: Has a dependency on rxdb for now...
 export default async function (db: RxEventsDatabase) {
@@ -18,7 +19,7 @@ export default async function (db: RxEventsDatabase) {
         done: VerifyCallback
       ) => {
         try {
-          console.log(
+          logger.info(
             `\n Successfully authenticated for profileId: ${profile.id}`
           );
           // Check if user exists
@@ -31,10 +32,10 @@ export default async function (db: RxEventsDatabase) {
             .exec();
 
           if (existingUser) {
-            console.log("User already exists");
+            logger.info("User already exists");
             return done(null, existingUser.toJSON());
           }
-          console.log("User does not exist, creating...");
+          logger.info("User does not exist, creating...");
 
           // Create new user
           const newUser = await db.users.insert({
@@ -44,11 +45,11 @@ export default async function (db: RxEventsDatabase) {
             githubId: profile.id,
           });
 
-          console.log(`New user created: ${newUser.githubId}`);
+          logger.info(`New user created: ${newUser.githubId}`);
 
           return done(null, newUser.toJSON());
         } catch (error) {
-          console.error("Error during authentication", error);
+          logger.error("Error during authentication", error);
           return done(error as Error);
         }
       }

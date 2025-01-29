@@ -1,5 +1,7 @@
+import logger from "./utils/logger";
+
 async function startServer() {
-  console.log("Initializing server...");
+  logger.info("Initializing server...");
   (await import("./loaders")).default();
 }
 

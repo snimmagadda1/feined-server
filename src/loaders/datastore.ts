@@ -1,7 +1,7 @@
 import { join } from "path";
-import type { User } from "../routes/users";
-import type { Event, EventRequest } from "../routes/events";
 import { parseISO } from "date-fns";
+import type { Event, EventRequest, User } from "../models";
+import logger from "../utils/logger";
 
 // Map<oauthProfileId -> User>
 // FIXME: service
@@ -43,19 +43,19 @@ const backupUsers = async () => {
     join(import.meta.dir, "../data/users.json"),
     JSON.stringify(users)
   );
-  console.log("**** background job: Users backed up ****");
+  logger.info("**** background job: Users backed up ****");
 };
 
 const backupEvents = async () => {
   const allEvents = [...EVENTS_COLLECTION.values()] // Get array of timestamp Maps
     .flatMap((timeMap) => [...timeMap.values()]) // Get arrays of events
-    .flat(); // Flatten the event arrays  console.log(allEvents);
+    .flat(); // Flatten the event arrays
 
   await Bun.write(
     join(import.meta.dir, "../data/events.json"),
     JSON.stringify(allEvents)
   );
-  console.log("**** background job: Events backed up ****");
+  logger.info("**** background job: Events backed up ****");
 };
 
 const loadUsers = async () => {
@@ -66,7 +66,7 @@ const loadUsers = async () => {
   users.forEach((user) => {
     USERS_COLLECTION.set(user.id, user);
   });
-  console.log(`Loaded ${USERS_COLLECTION.size} users`);
+  logger.info(`Loaded ${USERS_COLLECTION.size} users`);
 };
 
 const loadEvents = async () => {
@@ -90,8 +90,8 @@ const loadEvents = async () => {
     events.push(event);
     userData!.set(event.date!.getTime(), events);
   });
-  console.log(`Loaded documents for ${EVENTS_COLLECTION.size} distinct users`);
+  logger.info(`Loaded documents for ${EVENTS_COLLECTION.size} distinct users`);
   for (const [userId, events] of EVENTS_COLLECTION.entries()) {
-    console.log(`User ${userId} has ${events.size} documents`);
+    logger.info(`User ${userId} has ${events.size} documents`);
   }
 };
