@@ -5,6 +5,7 @@ import passportLoader from "./passport";
 import datastoreLoader from "./datastore";
 import datastoreRxdbLoader from "./datastore-rxdb";
 import loggersLoader from "./loggers";
+import healthLoader from "./health";
 import logger from "../utils/logger";
 import { config } from "../config";
 
@@ -22,6 +23,9 @@ export default async function () {
 
   await loggersLoader(app);
   logger.info("loggers loaded...");
+
+  await healthLoader(app);
+  logger.info("health loaded...");
 
   // Auth methods
   if (!DB) {
