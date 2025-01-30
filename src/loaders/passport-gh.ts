@@ -1,17 +1,17 @@
 import { nanoid } from "nanoid";
 import passport from "passport";
-import { authConfig } from "../config";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { type Profile as GitHubProfile } from "passport-github2";
 import { type VerifyCallback } from "passport-oauth2";
 import { type RxEventsDatabase } from "../models";
 import logger from "../utils/logger";
+import { config } from "../config";
 
 // FIXME: Has a dependency on rxdb for now...
 export default async function (db: RxEventsDatabase) {
   passport.use(
     new GitHubStrategy(
-      authConfig.github,
+      config.auth.github,
       async (
         accessToken: string,
         refreshToken: string,

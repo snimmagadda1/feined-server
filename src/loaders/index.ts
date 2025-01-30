@@ -6,19 +6,23 @@ import datastoreLoader from "./datastore";
 import datastoreRxdbLoader from "./datastore-rxdb";
 import loggersLoader from "./loggers";
 import logger from "../utils/logger";
+import { config } from "../config";
 
 export default async function () {
   // TODO: await internal backend maps load
+  logger.info("config loaded...", config.server.nodeEnv);
 
   await datastoreLoader();
-  logger.info("TODO: backend loaded...");
+  logger.info("datastore loaded...");
 
   // TODO: await rxdb backend load (to deprecate)
   const app = await rxdbLoader();
   await datastoreRxdbLoader();
-  logger.info("rxdb schema & backend loaded...");
+  logger.info("rxdb schema initialized& datastore synced...");
 
   await loggersLoader(app);
+  logger.info("loggers loaded...");
+
   // Auth methods
   if (!DB) {
     throw new Error("DB required for passport loader");

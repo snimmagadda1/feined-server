@@ -49,7 +49,6 @@ COPY --from=prerelease /usr/src/app/src/data/*.json ./src/data/
 COPY --from=prerelease /usr/src/app/package.json ./
 
 # run the app
-ENV NODE_ENV=production
 USER bun
 EXPOSE 8080
 ENTRYPOINT [ "bun", "run", "src/index.ts" ]
