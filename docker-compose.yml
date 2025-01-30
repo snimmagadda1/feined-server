@@ -5,7 +5,7 @@ services:
     container_name: bun-app
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV}
       - SESSION_SECRET=${SESSION_SECRET}
       - CORS=${CORS}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
