@@ -39,6 +39,7 @@ COPY --from=prerelease /usr/src/app/src/utils/*.ts ./src/utils/
 COPY --from=prerelease /usr/src/app/src/rxdb-server/*.ts ./src/rxdb-server/
 COPY --from=prerelease /usr/src/app/src/loaders/*.ts ./src/loaders/
 COPY --from=prerelease /usr/src/app/src/models/*.ts ./src/models/
+COPY --from=prerelease /usr/src/app/src/services/*.ts ./src/services/
 COPY --from=prerelease /usr/src/app/src/*.ts ./src/
 
 # Data files 
