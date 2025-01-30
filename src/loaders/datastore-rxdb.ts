@@ -31,8 +31,8 @@ export default async function () {
   const result2 = await eventsCollection.bulkInsert(allEventDocs);
 
   // FIXME: params
-  // const interval = 1000 * 60 * 60 * 24;
-  const interval = 10000;
+  const interval = 1000 * 60 * 60 * 24;
+  // const interval = 10000;
   setInterval(() => {
     syncUsers();
   }, interval);

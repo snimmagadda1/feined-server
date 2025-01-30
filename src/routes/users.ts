@@ -2,10 +2,11 @@ import { Router } from "express";
 import { type User, type UserRequest } from "../models";
 import logger from "../utils/logger";
 import { userService } from "../services";
+import { isAuth } from "../middleware/session";
 
 const router = Router();
 
-router.post("/", (req, res) => {
+router.post("/", isAuth, (req, res) => {
   try {
     /*
     const isValid = validators.user(req.body);
@@ -27,7 +28,7 @@ router.post("/", (req, res) => {
   }
 });
 
-router.get("/:userId", (req, res) => {
+router.get("/:userId", isAuth, (req, res) => {
   try {
     const { userId } = req.params;
     const user = userService.getUser(userId);

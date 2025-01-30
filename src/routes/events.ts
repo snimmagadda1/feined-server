@@ -2,10 +2,11 @@ import { Router } from "express";
 import { type Event, type EventRequest } from "../models";
 import logger from "../utils/logger";
 import { eventService } from "../services";
+import { isAuth } from "../middleware/session";
 
 const router = Router();
 
-router.get("/user/:userId", (req, res) => {
+router.get("/user/:userId", isAuth, (req, res) => {
   let userId = null;
   try {
     userId = req.params.userId;
@@ -30,7 +31,7 @@ router.get("/user/:userId", (req, res) => {
   }
 });
 
-router.post("/user/:userId", (req, res) => {
+router.post("/user/:userId", isAuth, (req, res) => {
   let userId = null;
   try {
     userId = req.params.userId;
