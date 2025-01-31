@@ -45,6 +45,7 @@ COPY --from=prerelease /usr/src/app/src/*.ts ./src/
 
 # Data files 
 COPY --from=prerelease /usr/src/app/src/data/*.json ./src/data/
+VOLUME /usr/src/app/src/data
 
 # Config files
 COPY --from=prerelease /usr/src/app/package.json ./
