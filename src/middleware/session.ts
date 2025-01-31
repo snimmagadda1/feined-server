@@ -1,11 +1,21 @@
 import session, { MemoryStore } from "express-session";
-import { config } from "../config";
+import { config, env } from "../config";
 
-export const MEMORY_STORE = new MemoryStore();
+let ProdMemoryStore;
+if (env.NODE_ENV === "production") {
+  ProdMemoryStore = require("memorystore")(session);
+}
+
+export const STORE =
+  env.NODE_ENV === "production"
+    ? new ProdMemoryStore({
+        checkPeriod: 86400000, // prune expired entries every 24h
+      })
+    : new MemoryStore();
 
 export const sessionMiddleware = session({
   ...config.auth.session,
-  store: MEMORY_STORE,
+  store: STORE,
 });
 
 // Add to all routes -> throws 401 if req.isAuthenticated() is false

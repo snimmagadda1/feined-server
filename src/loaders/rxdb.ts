@@ -21,7 +21,7 @@ import {
 import { RxServerAdapterExpress } from "snn-rxdb-server/plugins/adapter-express";
 
 // Internal modules (your application code)
-import { MEMORY_STORE } from "../middleware/session";
+import { STORE } from "../middleware/session";
 import {
   EVENTS_SCHEMA,
   USER_SCHEMA,
@@ -103,7 +103,7 @@ async function createDb(): Promise<Express> {
   await db.events.bulkInsert([testEvent]);
   logger.info("DatabaseService: bulk insert events");
 
-  const rxServer = await setupServer(db, MEMORY_STORE);
+  const rxServer = await setupServer(db, STORE);
   _RX_SERVER = rxServer;
   // Access the underlying Express app
   const app = rxServer.serverApp as Express;
@@ -138,7 +138,7 @@ async function setupServer(db: RxEventsDatabase, store: Store) {
         logger.error("Error in rxDb authHandler", error);
         throw error;
       }
-      logger.info("Returning userId", id);
+      logger.info("AuthHandler - returning userId", id);
       return {
         data: {
           id,
