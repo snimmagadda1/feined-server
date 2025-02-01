@@ -36,13 +36,46 @@ const backupEvents = async () => {
 };
 
 const loadUsers = async () => {
-  // FIXME: stream this in chunks for large files
-  const stored = Bun.file(join(import.meta.dir, "../data/users.json"));
+  // const stored = Bun.file(join(import.meta.dir, "../data/users.json"));
+  // const stream = stored.stream();
+  logger.info("***** BEGINNING STREAMING USERS FROM FILE *****");
+  const users = await loadJsonlUsers();
+  logger.info(
+    `***** ENDING STREAMING USERS FROM FILE. Loaded ${users?.length} users *****`
+  );
+};
 
-  const users = (await stored.json()) as User[];
-  logger.info(`Retrieved ${users.length} users from file`);
-  userService.init(users);
-  logger.info(`Loaded ${userService.getAllUsers().length} users`);
+const loadJsonlUsers = async () => {
+  const stored = Bun.file(join(import.meta.dir, "../data/users.jsonl"));
+  const stream = stored.stream().pipeThrough(new TextDecoderStream());
+  const reader = stream.getReader();
+  const users: User[] = [];
+  // holds current line, and last element in string
+  let stringBuffer = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      stringBuffer += value;
+
+      const linesInString = stringBuffer.split("\n");
+
+      for (let i = 0; i < linesInString.length - 1; i++) {
+        const line = linesInString[i]?.trim();
+        if (line) {
+          const user = JSON.parse(line) as User;
+          users.push(user);
+        }
+      }
+
+      // Keep last potentially incomplete line
+      stringBuffer = linesInString[linesInString.length - 1];
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return users;
 };
 
 const loadEvents = async () => {
