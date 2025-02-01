@@ -36,8 +36,6 @@ const backupEvents = async () => {
 };
 
 const loadUsers = async () => {
-  // const stored = Bun.file(join(import.meta.dir, "../data/users.json"));
-  // const stream = stored.stream();
   logger.info("***** BEGINNING STREAMING USERS FROM FILE *****");
   const users = await loadJsonlUsers();
   logger.info(
@@ -57,7 +55,6 @@ const loadJsonlUsers = async () => {
       const { done, value } = await reader.read();
       if (done) break;
       stringBuffer += value;
-
       const linesInString = stringBuffer.split("\n");
 
       for (let i = 0; i < linesInString.length - 1; i++) {
@@ -78,10 +75,41 @@ const loadJsonlUsers = async () => {
   return users;
 };
 
+const loadJsonlEvents = async () => {
+  const stored = Bun.file(join(import.meta.dir, "../data/events.jsonl"));
+  const stream = stored.stream().pipeThrough(new TextDecoderStream());
+  const reader = stream.getReader();
+  const events: EventRequest[] = [];
+  let stringBuffer = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      stringBuffer += value;
+      const linesInString = stringBuffer.split("\n");
+
+      for (let i = 0; i < linesInString.length - 1; i++) {
+        const line = linesInString[i];
+        if (line) {
+          const event = JSON.parse(line) as EventRequest;
+          events.push(event);
+        }
+      }
+
+      // Keep the last potentially incomplete line
+      stringBuffer += linesInString[linesInString.length - 1];
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return events;
+};
+
 const loadEvents = async () => {
-  const stored = Bun.file(join(import.meta.dir, "../data/events.json"));
-  const events = (await stored.json()) as EventRequest[];
-  logger.info(`Retrieved ${events.length} events from file`);
-  eventService.init(events);
-  logger.info(`Loaded ${eventService.getAllEvents().length} events`);
+  logger.info("***** BEGINNING STREAMING EVENTS FROM FILE *****");
+  const events = await loadJsonlEvents();
+  logger.info(
+    `***** ENDING STREAMING EVENTS FROM FILE. Loaded ${events?.length} users *****`
+  );
 };
