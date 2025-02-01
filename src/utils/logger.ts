@@ -1,4 +1,5 @@
 import { createLogger, format, transports } from "winston";
+import { getCorrelationId } from "../middleware/correlator";
 const { combine, timestamp, json, colorize, errors } = format;
 
 // Pretty console logging
@@ -6,7 +7,9 @@ const consoleLogFormat = format.combine(
   errors({ stack: true }),
   colorize(),
   format.printf(({ level, message, timestamp, stack }) => {
-    return `${timestamp} ${level}: ${message} ${stack ? `\n${stack}` : ""}`;
+    return `${timestamp} ${level}: ${getCorrelationId()} - ${message} ${
+      stack ? `\n${stack}` : ""
+    }`;
   })
 );
 

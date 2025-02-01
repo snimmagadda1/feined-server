@@ -1,6 +1,7 @@
 import type { Express, Request } from "express";
 import logger from "../utils/logger";
 import morgan from "morgan";
+import { correlator, getCorrelationId } from "../middleware/correlator";
 
 // Custom tokens
 morgan.token("session-id", (req: Request) => req.sessionID || "-");
@@ -12,6 +13,9 @@ const morganFormat =
   ":method :url :status :res[content-length] :session-id :user-id :user-agent :response-time";
 
 export default async function (app: Express) {
+  // Add correlationId generator middleware
+  app.use(correlator);
+
   // Add morgan middleware
   app.use(
     morgan(morganFormat, {
