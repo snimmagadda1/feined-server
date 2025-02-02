@@ -6,6 +6,33 @@ import { isAuth } from "../middleware/session";
 
 const router = Router();
 
+/**
+ * @openapi
+ * /user:
+ *   post:
+ *     tags:
+ *       - Users
+ *     summary: Create a new user
+ *     security:
+ *       - sessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserRequest'
+ *     responses:
+ *       200:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
 router.post("/", isAuth, (req, res) => {
   try {
     /*
@@ -28,6 +55,34 @@ router.post("/", isAuth, (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /user/{userId}:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get user by ID
+ *     security:
+ *       - sessionAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the user to retrieve
+ *     responses:
+ *       200:
+ *         description: User found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get("/:userId", isAuth, (req, res) => {
   try {
     const { userId } = req.params;
@@ -43,4 +98,36 @@ router.get("/:userId", isAuth, (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     UserRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - name
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *         name:
+ *           type: string
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         name:
+ *           type: string
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ */
 export default router;

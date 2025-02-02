@@ -4,7 +4,6 @@ import logger from "../utils/logger";
 
 const router = Router();
 
-// protected route using passport middleware
 router.get(
   "/github",
   (req, res, next) => {
