@@ -20,18 +20,15 @@ export default async function () {
 // FIXME: do this more efficiently
 const backupUsers = async () => {
   const users = userService.getAllUsers();
-  await Bun.write(
-    join(import.meta.dir, "../data/users.json"),
-    JSON.stringify(users)
-  );
+  const jsonlContent = users.map((user) => JSON.stringify(user)).join("\n");
+  await Bun.write(join(import.meta.dir, "../data/users.jsonl"), jsonlContent);
   logger.info("____ background job: Users backed up ____");
 };
 
 const backupEvents = async () => {
-  await Bun.write(
-    join(import.meta.dir, "../data/events.json"),
-    JSON.stringify(eventService.getAllEvents())
-  );
+  const events = eventService.getAllEvents();
+  const jsonlContent = events.map((event) => JSON.stringify(event)).join("\n");
+  await Bun.write(join(import.meta.dir, "../data/events.jsonl"), jsonlContent);
   logger.info("____ background job: Events backed up ____");
 };
 
