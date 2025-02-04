@@ -8,7 +8,7 @@ export default async function () {
   await loadEvents();
   // FIXME: params
   // const interval = 1000 * 60 * 60 * 24;
-  const interval = 10000;
+  const interval = 20000;
   setInterval(() => {
     backupUsers();
   }, interval);
