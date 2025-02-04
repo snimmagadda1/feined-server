@@ -1,3 +1,5 @@
+## This has been consolidated to [here](https://github.com/snimmagadda1/fickle-cal)!
+
 # feined-rxdb-server
 
 A bun + express server running the `rxdb-server` package to host a DB to allow replication between clients & the server. The backend for [fickle-calendar](https://github.com/snimmagadda1/fickle-cal).
